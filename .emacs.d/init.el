@@ -93,20 +93,23 @@
 (toggle-truncate-lines t)
 
 
-(use-package doom-themes
-  :ensure t
-  :config
-  (setq doom-themes-enable-bold nil    ; if nil, bold is universally disabled
-        doom-themes-enable-italic nil) ; if nil, italics is universally disabled
-  ;; (doom-themes-neotree-config)
-  (load-theme 'doom-xcode t)
-  )
+(require 'moe-theme)
+(load-theme 'moe-dark t)
 
-;;      ;; (load-theme 'spacemacs-dark t)
-;;      ;;(load-theme 'dracula t)
-;;      ;; (load-theme 'spacemacs-dark t)
-;;      ;; (load-theme 'dracula t)
-;;      ;; (load-theme 'kaolin-ocean t)
+;;;  (use-package doom-themes
+;;;    :ensure t
+;;;    :config
+;;;    (setq doom-themes-enable-bold nil    ; if nil, bold is universally disabled
+;;;          doom-themes-enable-italic nil) ; if nil, italics is universally disabled
+;;;    ;; (doom-themes-neotree-config)
+;;;    (load-theme 'doom-xcode t)
+;;;    )
+;;;
+;;;  ;;      ;; (load-theme 'spacemacs-dark t)
+;;;  ;;      ;;(load-theme 'dracula t)
+;;;  ;;      ;; (load-theme 'spacemacs-dark t)
+;;;  ;;      ;; (load-theme 'dracula t)
+;;;  ;;      ;; (load-theme 'kaolin-ocean t)
 
 
 (setq-default line-spacing 0)
