@@ -164,10 +164,10 @@
       window-divider-default-right-width 1)
 (add-hook 'window-setup-hook #'window-divider-mode)
 
-(set-face-background 'vertical-border (face-background 'default))
+(set-face-background 'line-number 'unspecified)
+(set-face-background 'vertical-border 'unspecified)
 (set-face-foreground 'vertical-border "#00ff00")
 
-;; (set-face-background 'line-number (face-background 'default))
 
 ;; (global-font-lock-mode -1)
 
@@ -1082,18 +1082,19 @@
                         :background "#1B1E1C"))
    ))
 
+
 (defun my-god-mode-update-cursor-type ()
   (setq cursor-type (if (or god-local-mode buffer-read-only) 'box 'bar))
 
     (if (bound-and-true-p god-local-mode)
       (progn
-        (set-face-attribute 'hl-line nil :inherit nil :background 'unspecified)
-        (set-face-attribute 'line-number-current-line nil :foreground "#00ff00")
+        (set-face-background 'hl-line 'unspecified)
+        (set-face-background 'line-number-current-line 'unspecified)
         (setq cursor-type 'box)
       )
       (progn
-        (set-face-attribute 'hl-line nil :inherit nil :background "gray12")
-        (set-face-attribute 'line-number-current-line nil :foreground "#3f4040")
+        (set-face-background 'hl-line "gray12")
+        (set-face-background 'line-number-current-line '#d7ff5f')
         (setq cursor-type 'bar)
       )
     )
@@ -1128,6 +1129,8 @@
   (setq neo-smart-open 't)
   (setq neo-window-fixed-size nil)
   ;; (setq neo-toggle-window-keep-p 't)
+  :config
+  (set-face-background 'neo-expand-btn-face 'unspecified)
 )
 
 (defun neotree-project-dir ()
