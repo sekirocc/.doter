@@ -1094,7 +1094,7 @@
       )
       (progn
         (set-face-background 'hl-line "gray12")
-        (set-face-background 'line-number-current-line '#d7ff5f')
+        (set-face-background 'line-number-current-line "#d7ff5f")
         (setq cursor-type 'bar)
       )
     )
@@ -1611,7 +1611,7 @@ opening parenthesis one level up."
     (define-key god-local-mode-map (kbd "x") #'my-delete-char)
     (define-key god-local-mode-map (kbd "d") #'kill-whole-line)
 
-    (define-key god-local-mode-map (kbd "z h") #'my-hs-toggle-all)
+    (define-key god-local-mode-map (kbd "z m") #'my-hs-toggle-all)
     (define-key god-local-mode-map (kbd "z v") #'recenter-top-bottom)
     (define-key god-local-mode-map (kbd "z j") #'end-of-buffer)
     (define-key god-local-mode-map (kbd "z k") #'beginning-of-buffer)
