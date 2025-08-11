@@ -70,14 +70,26 @@
 ;; 定义向左缩进函数（每次移动 tab-width 个空格）
 (defun indent-rigidly-left (start end)
   "向左 rigidly 缩进选中区域一个 tab-width。"
-  (interactive "r")
-  (indent-rigidly start end (- tab-width)))
+  (interactive
+    (if (use-region-p)
+      (list (region-beginning) (region-end))
+      (list (line-beginning-position) (line-end-position))))
+  ;; 禁止任何命令 deactive mark
+  (let ((deactivate-mark nil))
+    (indent-rigidly start end (- tab-width))
+    ))
 
 ;; 定义向右缩进函数（每次移动 tab-width 个空格）
 (defun indent-rigidly-right (start end)
   "向右 rigidly 缩进选中区域一个 tab-width。"
-  (interactive "r")
-  (indent-rigidly start end tab-width))
+  (interactive
+    (if (use-region-p)
+      (list (region-beginning) (region-end))
+      (list (line-beginning-position) (line-end-position))))
+  ;; 禁止任何命令 deactive mark
+  (let ((deactivate-mark nil))
+    (indent-rigidly start end tab-width)
+    ))
 
 
 ;; jump with C-- C-=, like vscode
