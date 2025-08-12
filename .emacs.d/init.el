@@ -568,14 +568,6 @@
   (indent-bars-display-on-blank-lines t)
   :hook
   (prog-mode . indent-bars-mode)
-  :config
-  ;; 设置 flymake face 的优先级，让 indent-bars 的竖线不被覆盖
-  (add-hook 'indent-bars-mode-hook
-    (lambda ()
-      (when indent-bars-mode
-        ;; 注意：:priority 属性在当前的 Emacs 版本中不被支持
-        ;; 如果需要优先级控制，可以考虑其他方法
-        )))
   )
 
 
