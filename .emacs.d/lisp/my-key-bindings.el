@@ -63,6 +63,12 @@
 
 (bind-key* (kbd "s-h") #'tab-previous)
 (bind-key* (kbd "s-l") #'tab-next)
+(bind-key* (kbd "s-1") #'(lambda() (interactive) (tab-bar-select-tab 1)))
+(bind-key* (kbd "s-2") #'(lambda() (interactive) (tab-bar-select-tab 2)))
+(bind-key* (kbd "s-3") #'(lambda() (interactive) (tab-bar-select-tab 3)))
+(bind-key* (kbd "s-4") #'(lambda() (interactive) (tab-bar-select-tab 4)))
+(bind-key* (kbd "s-5") #'(lambda() (interactive) (tab-bar-select-tab 5)))
+(bind-key* (kbd "s-9") #'(lambda() (interactive) (tab-bar-select-tab (length (tab-bar-tabs)))))
 
 (bind-key* (kbd "s-b") #'treemacs)
 

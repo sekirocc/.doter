@@ -84,6 +84,7 @@
          my-quit-god-mode
          my-replace-char
          my-select-current-line-and-forward-line
+         my-select-to-bol
          my-set-mark-command-or-deactivate-mark
          my-toggle-case-char
          my-wrap-region-with-double-quotes
