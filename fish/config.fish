@@ -108,3 +108,5 @@ alias gup='git pull'
 
 # Added by LM Studio CLI (lms)
 set -gx PATH $PATH /Users/jiechen/.cache/lm-studio/bin
+
+string match -q "$TERM_PROGRAM" "kiro" and . (kiro --locate-shell-integration-path fish)

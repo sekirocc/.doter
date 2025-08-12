@@ -57,6 +57,8 @@
 (bind-key* (kbd "s-w") #'kill-current-buffer)
 (bind-key* (kbd "s-t") #'+funcs/new-empty-buffer)
 
+(bind-key* (kbd "C-t") #'multi-vterm)
+
 (bind-key* (kbd "s-<backspace>") #'my-delete-to-bol)
 
 (bind-key* (kbd "s-h") #'tab-previous)
