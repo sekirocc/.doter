@@ -26,6 +26,13 @@
   (keymap-unset vterm-mode-map "M-:")
   )
 
+(use-package multi-vterm
+  :ensure t
+  (setq multi-vterm-dedicated-window-height-percent 90)
+  )
+
+
+
 (provide 'init-vterm)
 
 ;;; init-vterm.el ends here
