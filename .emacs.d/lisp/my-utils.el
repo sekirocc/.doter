@@ -972,6 +972,8 @@ If buffer-or-name is nil return current buffer's mode."
   (setenv "https_proxy" "http://127.0.0.1:9910")
   (setenv "HTTP_PROXY" "http://127.0.0.1:9910")
   (setenv "HTTPS_PROXY" "http://127.0.0.1:9910")
+  (setenv "no_proxy" "localhost,127.0.0.1,::1,192.168.0.0/16,172.16.0.0/12,10.0.0.0/8")
+  (setenv "NO_PROXY" "localhost,127.0.0.1,::1,192.168.0.0/16,172.16.0.0/12,10.0.0.0/8")
   )
 
 
