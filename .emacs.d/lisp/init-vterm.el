@@ -37,6 +37,14 @@
   )
 
 
+;; 当用户主动滚动到上方时，自动进入 copy mode，从而阻止自动刷新终端
+(advice-add 'set-window-vscroll :after
+  (defun me/vterm-toggle-scroll (&rest _)
+    (when (eq major-mode 'vterm-mode)
+      (if (> (window-end) (buffer-size))
+          (when vterm-copy-mode (vterm-copy-mode-done nil))
+        (vterm-copy-mode 1)))))
+
 
 (provide 'init-vterm)
 
