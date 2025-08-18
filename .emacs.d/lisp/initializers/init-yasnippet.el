@@ -12,11 +12,10 @@
   (add-hook 'yas-before-expand-snippet-hook #'my-disable-eglot-highlight)
   (add-hook 'yas-after-exit-snippet-hook    #'my-enable-eglot-highlight)
 
-  (defun my-abort-yas-before-format ()
+  (defun my-abort-yas-before-format (&rest args)
     "在格式化前中止所有活跃的 YASnippet 会话。"
-    (when (and (bound-and-true-p yas-minor-mode)
-               (yas--active-snippets))
-      (yas-abort-buffer)))
+    (when (bound-and-true-p yas-minor-mode)
+      (yas-abort-snippet)))
 
   (with-eval-after-load 'format-all
         ;; 为 format-all 的格式化命令添加 advice
