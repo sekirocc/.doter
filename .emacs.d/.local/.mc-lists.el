@@ -162,6 +162,7 @@
          dakra/counsel-search-project-empty
          dap-tooltip-mouse-motion
          delete-window
+         describe-command
          describe-key
          end-of-buffer
          exwm-windmove-down
