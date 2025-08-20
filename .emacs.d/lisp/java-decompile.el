@@ -57,7 +57,13 @@
                        "~/.m2/repository"
                        "~/.gradle/caches"
                        "/usr/share/java"
-                       "/opt/java")))
+                       "/opt/java"
+                       ;; Add current project deps directories
+                       "./deps"
+                       "../deps"
+                       "../../deps"
+                       "./lib"
+                       "../lib")))
     (catch 'found
       (dolist (base-path search-paths)
         (let ((expanded-path (expand-file-name base-path)))
@@ -205,103 +211,152 @@
 
 (defun jdtls-process-jadx-result (temp-dir cache-file class-path target-buffer)
   "Process JADX result and update target buffer."
+  ;; Wait a bit for JADX to finish writing files
+  (run-with-timer 0.5 nil
+    (apply-partially 'jdtls-process-jadx-result-delayed
+      temp-dir cache-file class-path target-buffer)))
+
+(defun jdtls-process-jadx-result-delayed (temp-dir cache-file class-path target-buffer)
+  "Process JADX result after delay to avoid race conditions."
   (let* ((sources-dir (concat temp-dir "/sources"))
           ;; Convert class path to file path
-          (class-file-path (concat sources-dir "/" (replace-regexp-in-string "\\." "/" class-path) ".java"))
-          ;; First try exact match, then fallback to class name search
-          (java-files (if (file-exists-p class-file-path)
-                          (list class-file-path)
-                        (let ((class-file-name (car (last (split-string class-path "\\.")))))
-                          (when (file-directory-p sources-dir)
-                            (directory-files-recursively sources-dir 
-                              (concat (regexp-quote class-file-name) "\\.java$")))))))
+          (class-file-path (concat sources-dir "/" (replace-regexp-in-string "\\." "/" class-path) ".java")))
 
     (message "DEBUG: Looking for class file at: %s" class-file-path)
-    (message "DEBUG: Found java files: %s" java-files)
     
-    (if java-files
-      (condition-case err
-        (let ((java-file (car java-files)))
-          ;; Save to cache
-          (copy-file java-file cache-file)
+    ;; Try to find the Java file with retry mechanism
+    (jdtls-find-java-file-with-retry class-file-path class-path sources-dir 
+                                     cache-file target-buffer temp-dir 0)))
 
-          ;; Update target buffer first, then load content asynchronously
-          (when (buffer-live-p target-buffer)
-            (with-current-buffer target-buffer
-              (let ((inhibit-read-only t))
-                (erase-buffer)
-                (insert (format "// Decompiled with JADX from: %s\n"
-                          (file-name-nondirectory cache-file)))
-                (insert (format "// Class: %s\n\n" class-path))
-                (insert "// Loading content...\n")))
+(defun jdtls-find-java-file-with-retry (class-file-path class-path sources-dir 
+                                                        cache-file target-buffer temp-dir retry-count)
+  "Find Java file with retry mechanism to handle race conditions."
+  (let ((max-retries 5))
+    (cond
+      ;; Found exact file
+      ((file-exists-p class-file-path)
+       (message "DEBUG: Found exact file: %s" class-file-path)
+       (jdtls-load-java-file class-file-path cache-file target-buffer temp-dir))
+      
+      ;; Search by class name
+      ((file-directory-p sources-dir)
+       (let* ((class-file-name (car (last (split-string class-path "\\."))))
+              (java-files (directory-files-recursively sources-dir 
+                            (concat (regexp-quote class-file-name) "\\.java$"))))
+         (message "DEBUG: Found java files by name search: %s" java-files)
+         (if java-files
+             (jdtls-load-java-file (car java-files) cache-file target-buffer temp-dir)
+           ;; Retry if not found and haven't exceeded max retries
+           (if (< retry-count max-retries)
+               (progn
+                 (message "DEBUG: Retrying in 0.5s (attempt %d/%d)" (1+ retry-count) max-retries)
+                 (run-with-timer 0.5 nil
+                   (apply-partially 'jdtls-find-java-file-with-retry
+                     class-file-path class-path sources-dir 
+                     cache-file target-buffer temp-dir (1+ retry-count))))
+             (jdtls-handle-decompilation-failure class-path target-buffer temp-dir)))))
+      
+      ;; Sources directory doesn't exist, retry or fail
+      ((< retry-count max-retries)
+       (message "DEBUG: Sources dir not ready, retrying in 0.5s (attempt %d/%d)" (1+ retry-count) max-retries)
+       (run-with-timer 0.5 nil
+         (apply-partially 'jdtls-find-java-file-with-retry
+           class-file-path class-path sources-dir 
+           cache-file target-buffer temp-dir (1+ retry-count))))
+      
+      ;; Max retries exceeded
+      (t
+       (jdtls-handle-decompilation-failure class-path target-buffer temp-dir)))))
 
-            ;; Load content asynchronously
-            (run-with-timer 0.05 nil
-              (apply-partially
-                (lambda (java-file target-buffer)
-                  (let ((java-source (with-temp-buffer
-                                       (insert-file-contents java-file)
-                                       (buffer-string))))
-                    (when (buffer-live-p target-buffer)
-                      (with-current-buffer target-buffer
-                        (let ((inhibit-read-only t))
-                          (goto-char (point-max))
-                          (delete-region (point-at-bol) (point))  ; Remove "Loading..." line
-                          (jdtls-insert-large-content java-source target-buffer))))))
-                java-file target-buffer))))
-        (error
-          (message "Error processing JADX result: %s" err)
-          (when (buffer-live-p target-buffer)
-            (with-current-buffer target-buffer
-              (let ((inhibit-read-only t))
-                (erase-buffer)
-                (insert "// Error occurred during decompilation\n")
-                (insert (format "// Error: %s\n" err)))))))
+(defun jdtls-load-java-file (java-file cache-file target-buffer temp-dir)
+  "Load Java file content into target buffer."
+  (condition-case err
       (progn
-        (message "JADX decompilation failed - no Java files found for class: %s" class-path)
+        ;; Save to cache
+        (copy-file java-file cache-file)
+
+        ;; Update target buffer first, then load content asynchronously
         (when (buffer-live-p target-buffer)
           (with-current-buffer target-buffer
             (let ((inhibit-read-only t))
               (erase-buffer)
-              (insert "// JADX decompilation failed\n")
-              (insert (format "// No Java files found for class: %s\n" class-path))
-              (insert "// This might happen if the class is not in the JAR\n")
-              (insert "// or if JADX failed to decompile it.\n"))))))
+              (insert (format "// Decompiled with JADX from: %s\n"
+                        (file-name-nondirectory java-file)))
+              (insert (format "// Class: %s\n\n" (file-name-base java-file)))
+              (insert "// Loading content...\n")))
 
-    ;; Cleanup
+          ;; Load content asynchronously
+          (run-with-timer 0.05 nil
+            (apply-partially
+              (lambda (java-file target-buffer temp-dir)
+                (let ((java-source (with-temp-buffer
+                                     (insert-file-contents java-file)
+                                     (buffer-string))))
+                  (when (buffer-live-p target-buffer)
+                    (with-current-buffer target-buffer
+                      (let ((inhibit-read-only t))
+                        (goto-char (point-max))
+                        (delete-region (point-at-bol) (point))  ; Remove "Loading..." line
+                        (jdtls-insert-large-content java-source target-buffer))))
+                  ;; Cleanup temp directory
+                  (delete-directory temp-dir t)))
+              java-file target-buffer temp-dir))))
+    (error
+      (message "Error loading Java file: %s" err)
+      (jdtls-handle-decompilation-failure "Unknown" target-buffer temp-dir))))
+
+(defun jdtls-handle-decompilation-failure (class-path target-buffer temp-dir)
+  "Handle decompilation failure by showing error message."
+  (message "JADX decompilation failed for class: %s" class-path)
+  (when (buffer-live-p target-buffer)
+    (with-current-buffer target-buffer
+      (let ((inhibit-read-only t))
+        (erase-buffer)
+        (insert "// JADX decompilation failed\n")
+        (insert (format "// Class: %s\n" class-path))
+        (insert "// This might happen if the class is not in the JAR\n")
+        (insert "// or if JADX failed to decompile it.\n"))))
+  ;; Cleanup
+  (when (file-directory-p temp-dir)
     (delete-directory temp-dir t)))
 
 (defun jdtls-insert-large-content (content target-buffer)
   "Insert large content without blocking UI."
-  (if (< (length content) 5000)
-    ;; Small content, insert directly
-    (progn
-      (insert content)
-      (jdtls-finalize-buffer target-buffer))
+  (when (buffer-live-p target-buffer)
+    (with-current-buffer target-buffer
+      (let ((inhibit-read-only t))
+        (if (< (length content) 5000)
+          ;; Small content, insert directly
+          (progn
+            (insert content)
+            (jdtls-finalize-buffer target-buffer))
 
-    ;; Large content, insert in very small chunks
-    (let ((chunk-size 1000)
-           (pos 0))
-      (jdtls-insert-content-chunk content target-buffer pos chunk-size))))
+          ;; Large content, insert in very small chunks
+          (let ((chunk-size 1000)
+                 (pos 0))
+            (jdtls-insert-content-chunk content target-buffer pos chunk-size)))))))
 
 (defun jdtls-insert-content-chunk (content target-buffer pos chunk-size)
   "Insert content chunk by chunk with progress indication."
-  (let ((end-pos (min (+ pos chunk-size) (length content)))
-         (progress (/ (* pos 100) (length content))))
+  (when (buffer-live-p target-buffer)
+    (with-current-buffer target-buffer
+      (let ((end-pos (min (+ pos chunk-size) (length content)))
+            (progress (/ (* pos 100) (length content)))
+            (inhibit-read-only t))
 
-    ;; Show progress
-    (when (= (mod progress 10) 0)
-      (message "Loading decompiled content... %d%%" progress))
+        ;; Show progress
+        (when (= (mod progress 10) 0)
+          (message "Loading decompiled content... %d%%" progress))
 
-    (insert (substring content pos end-pos))
+        (insert (substring content pos end-pos))
 
-    (if (< end-pos (length content))
-      ;; More content to insert - use very short timer
-      (run-with-timer 0.001 nil
-        (apply-partially 'jdtls-insert-content-chunk
-          content target-buffer end-pos chunk-size))
-      ;; Done inserting
-      (jdtls-finalize-buffer target-buffer))))
+        (if (< end-pos (length content))
+          ;; More content to insert - use very short timer
+          (run-with-timer 0.001 nil
+            (apply-partially 'jdtls-insert-content-chunk
+              content target-buffer end-pos chunk-size))
+          ;; Done inserting
+          (jdtls-finalize-buffer target-buffer))))))
 
 (defun jdtls-finalize-buffer (target-buffer)
   "Finalize buffer setup after content insertion."
