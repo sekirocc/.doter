@@ -29,7 +29,8 @@ jdk() {
         version=$1
         export JAVA_HOME=$(/usr/libexec/java_home -v"$version");
         java -version
- }
+}
+jdk 21
 
 kl() {
     echo -ne "\e[2 q"
