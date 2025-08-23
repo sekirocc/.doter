@@ -203,6 +203,7 @@
          multiple-cursors-menu/my-mc/mark-previous-like-this
          multiple-cursors-menu/my-mc/skip-to-next-like-this
          multiple-cursors-menu/my-mc/skip-to-previous-like-this
+         multiple-cursors-mode
          my-M-x
          my-break-to-multiple-lines
          my-escape-key
