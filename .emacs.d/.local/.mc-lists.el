@@ -85,6 +85,7 @@
          my-replace-char
          my-select-current-line-and-forward-line
          my-select-to-bol
+         my-select-to-eol
          my-set-mark-command-or-deactivate-mark
          my-toggle-case-char
          my-wrap-region-with-double-quotes
@@ -203,7 +204,6 @@
          multiple-cursors-menu/my-mc/mark-previous-like-this
          multiple-cursors-menu/my-mc/skip-to-next-like-this
          multiple-cursors-menu/my-mc/skip-to-previous-like-this
-         multiple-cursors-mode
          my-M-x
          my-break-to-multiple-lines
          my-escape-key
