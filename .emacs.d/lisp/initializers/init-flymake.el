@@ -22,6 +22,7 @@
 
   ;; 添加一个快捷键来手动触发 flymake 检查
   (define-key flymake-mode-map (kbd "C-c f") #'flymake-start)
+  (define-key flymake-mode-map (kbd "C-c F") #'flymake-goto-next-error)
 
   ;; 如果你想要在保存文件时自动运行 flymake 检查
   (add-hook 'before-save-hook #'flymake-start nil t)
