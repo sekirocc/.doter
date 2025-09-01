@@ -26,6 +26,7 @@ otherwise assumed alphabetic."
 
 (defun my-set-indent-from-clang-format()
   "Set indentation and tab settings based on .clang-format configuration."
+  (interactive)
   (let* ((clang-format-config
           (shell-command-to-string "clang-format -dump-config"))
          (c-offset (get-clang-format-option clang-format-config "IndentWidth" t))
@@ -54,9 +55,9 @@ otherwise assumed alphabetic."
                        (equal "Chromium" base-style)
                        (equal "Mozilla" base-style)
                        (equal "WebKit" base-style))
-                   (setq-local indent-tabs-mode nil))))))
-    )
-  )
+                   (setq-local indent-tabs-mode nil)))))
+      (if (functionp 'indent-bars-reset)
+        (indent-bars-reset)))))
 
 
 (defun my-c-ts-mode-hook()

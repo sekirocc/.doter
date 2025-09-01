@@ -54,22 +54,18 @@ This variable is nil if the current buffer isn't visiting a file.")
 ;; 优化后的文件名设置函数
 (defun set-buffer-filename-with-git-directory-cached ()
   "Set buffer filename with git directory, using cache."
-  (when buffer-file-name
+  (when (and buffer-file-name buffer-file-truename)
     (let ((cache-key (list buffer-file-name buffer-file-truename)))
       (unless (and my-buffer-filename-cache
                    (equal (car my-buffer-filename-cache) cache-key))
         (setq my-buffer-filename-cache
               (cons cache-key
                     (or
-                     (when-let* ((buffer-file-truename buffer-file-truename)
-                                (prj (cdr-safe (project-current)))
-                                (prj-parent
-                                 (file-name-directory
-                                  (directory-file-name (expand-file-name prj)))))
-                       (concat (file-relative-name
-                               (file-name-directory buffer-file-truename)
-                               prj-parent)
-                              (file-name-nondirectory buffer-file-truename)))
+                     (when-let* ((project (project-current))
+                                 (root (project-root project))
+                                 (root-parent (file-name-directory (directory-file-name root)))
+                                 (rel-dir (file-relative-name (file-name-directory buffer-file-truename) root-parent)))
+                       (concat rel-dir (file-name-nondirectory buffer-file-truename)))
                      buffer-file-name))))
 
       (setq buffer-filename-with-git-directory (cdr my-buffer-filename-cache)))))
