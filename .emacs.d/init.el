@@ -66,6 +66,7 @@
 
 (setq mac-command-modifier 'super)
 
+
 ;;; Directory Setup
 ;; create the autosave dir if necessary, since emacs won't.
 (make-directory "~/.emacs.d/.local/auto-save-list/" t)
@@ -340,7 +341,7 @@
 
 ;;; Enhanced Editing Tools
 (require 'init-mwim)
-(require 'init-yank-indent)
+;; (require 'init-yank-indent)
 (require 'init-srefactor)
 
 ;; .gitignore  .dockerignore .npmignore
@@ -547,6 +548,7 @@
        (window-width . 90)))
   (setq claude-code-terminal-backend 'vterm)
   (setq claude-code-vterm-buffer-multiline-output nil)
+  (setq claude-code-sandbox-program "claude")
   (advice-add 'claude-code-send-region :after #'(lambda(&arg) (deactivate-mark)(beginning-of-line)))
   )
 ;; (use-package claudemacs
@@ -638,24 +640,138 @@
 
 ;;; Custom Faces Configuration
 (custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
+  ;; custom-set-faces was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
+  '(avy-lead-face ((t (:background "#161c23" :weight normal :foreground "deeppink"))))
+  '(avy-lead-face-0 ((t (:background "#161c23" :foreground "#FFB400"))))
+  '(aw-mode-line-face ((t (:inherit nil))))
+  '(cfrs-border-color ((t (:background "yellow"))))
+  '(company-tooltip ((t (:background "black"))))
+  '(company-tooltip-common ((t (:weight normal :foreground "#7FDC59"))))
+  '(company-tooltip-selection ((t (:weight normal))))
+  '(deadgrep-match-face ((t (:inherit lazy-highlight))))
+  '(eglot-diagnostic-tag-deprecated-face ((t (:underline nil :strike-through nil :foreground "yellow"))))
+  '(eglot-diagnostic-tag-unnecessary-face ((t (:underline nil :foreground "yellow"))))
+  '(eglot-highlight-symbol-face ((t (:inherit my-highlight-font-words-face))))
+  '(eglot-mode-line ((t (:inherit nil :weight bold))))
+  '(flymake-error ((t (:foreground "Yellow" :underline nil :weight normal))))
+  '(flymake-note ((t (:underline nil))))
+  '(flymake-warning ((t (:underline nil))))
+  '(font-lock-keyword-face ((t (:foreground "orchid" :weight normal))))
+  '(font-lock-preprocessor-face ((t (:weight normal))))
+  '(fringe ((t (:foreground unspecified :background unspecified :inherit default))))
+  '(highlight-indent-guides-character-face ((t (:inherit font-lock-doc-markup-face))))
+  '(iedit-occurrence ((t (:foreground "black" :background "yellow"))))
+  '(isearch ((t (:foreground "white" :background "deeppink" :weight normal))))
+  '(ivy-minibuffer-match-face-1 ((t (:weight regular))))
+  '(ivy-minibuffer-match-face-2 ((t (:weight regular))))
+  '(ivy-minibuffer-match-face-3 ((t (:weight regular))))
+  '(ivy-minibuffer-match-face-4 ((t (:weight regular))))
+  '(lazy-highlight ((t (:background "#7FDC59" :foreground "#161c23" :weight normal))))
+  '(line-number ((t (:inherit default :foreground "gray33" :slant normal :weight normal))))
+  '(line-number-current-line ((t (:background "#1b2129" :foreground "white" :slant normal :weight normal))))
+  '(mode-line ((t (:background "#415367" :foreground "#e5ded6" :underline (:color foreground-color :style line :position t)))))
+  '(mode-line-active ((t (:background "#66c9ff" :foreground "#000000" :box nil :underline nil))))
+  '(mode-line-highlight ((t (:box nil :foreground "green"))))
+  '(mode-line-inactive ((t (:background "#1a202c" :foreground "#a0aec0" :box nil :underline nil))))
+  '(region ((t (:background "#214283" :distant-foreground "#707080"))))
+  '(ripgrep-match-face ((t (:inherit my-highlight-font-words-face))))
+  '(shadow ((t (:foreground "#444444"))))
+  '(show-paren-match ((t (:foreground "green" :background "#11501B" :weight normal :underline (:position t)))))
+  '(sideline-flymake-error ((t (:inherit nil :background "red" :foreground "white"))))
+  '(sideline-flymake-note ((t (:inherit nil :background "lightblue" :foreground "black"))))
+  '(sideline-flymake-warning ((t (:inherit nil :background "lightyellow" :foreground "black"))))
+  '(success ((t (:foreground "Green1" :weight regular))))
+  '(symbol-overlay-default-face ((t (:inherit my-highlight-font-words-face))))
+  '(tab-bar ((t (:background "#1e1e1e" :height 140))))
+  '(tab-bar-tab ((t (:foreground "black" :background "yellow" :box (:line-width 2 :color "yellow" :style flat-button)))))
+  '(tooltip ((t (:font "IBM Plex Mono-15.0" :box (:line-width 1 :color "gray" :style released-button)))))
+  '(treemacs-directory-collapsed-face ((t (:family "IBM Plex Mono" :weight normal :height 140 :underline nil :inherit unspecified :foreground "#57D8D4"))))
+  '(treemacs-directory-face ((t (:family "IBM Plex Mono" :weight normal :height 140 :underline nil :inherit unspecified :foreground "#57D8D4"))))
+  '(treemacs-file-face ((t (:family "IBM Plex Mono" :weight normal :height 140 :underline nil :inherit unspecified :foreground "#C6B8AD"))))
+  '(treemacs-git-added-face ((t (:family "IBM Plex Mono" :weight normal :height 140 :underline nil :inherit unspecified :foreground "#C6B8AD"))))
+  '(treemacs-git-conflict-face ((t (:family "IBM Plex Mono" :weight normal :height 140 :underline nil :inherit unspecified :foreground "#C6B8AD"))))
+  '(treemacs-git-ignored-face ((t (:family "IBM Plex Mono" :weight normal :height 140 :underline nil :inherit unspecified :foreground "#C6B8AD"))))
+  '(treemacs-git-modified-face ((t (:family "IBM Plex Mono" :weight normal :height 140 :underline nil :inherit unspecified :foreground "#D0BF68"))))
+  '(treemacs-git-renamed-face ((t (:family "IBM Plex Mono" :weight normal :height 140 :underline nil :inherit unspecified :foreground "#C6B8AD"))))
+  '(treemacs-git-unmodified-face ((t (:family "IBM Plex Mono" :weight normal :height 140 :underline nil :inherit unspecified :foreground "#C6B8AD"))))
+  '(treemacs-git-untracked-face ((t (:family "IBM Plex Mono" :weight normal :height 140 :underline nil :inherit unspecified :foreground "#C6B8AD"))))
+  '(treemacs-root-face ((t (:family "IBM Plex Mono" :weight normal :height 140 :underline nil :inherit unspecified :foreground "#57D8D4"))))
+  '(treemacs-tags-face ((t (:family "IBM Plex Mono" :weight normal :height 140 :underline nil :inherit unspecified :foreground "#C6B8AD"))))
+  '(vertical-border ((t (:inherit nil :background "#161c23" :foreground "#66c9ff"))))
+  '(whitespace-tab ((t (:foreground unspecified :background unspecified :inherit shadow))))
+  '(whitespace-trailing ((t (:foreground unspecified :background unspecified :inherit shadow))))
+  '(widget-field ((t (:background "#C6B8AD" :foreground "black"))))
+  '(window-divider ((t (:foreground "#66c9ff"))))
+  '(window-divider-first-pixel ((t (:foreground "#415367"))))
+  '(window-divider-last-pixel ((t (:foreground "#415367"))))
+  '(yas-field-highlight-face ((t (:inherit my-highlight-font-words-face))))
+)
 
 ;;; Custom Variables
 (custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(package-vc-selected-packages
-	'((claude-code :url "https://github.com/stevemolitor/claude-code.el")))
- '(safe-local-variable-values
-	'((projectile-project-root . "/Users/jiechen/work/code/danloo")
-	   (eglot-server-programs
-		 (python-mode "basedpyright-langserver" "--stdio"))
-	   (python-shell-interpreter ".venv/bin/python"))))
+  '(auto-save-file-name-transforms '((".*" "~/.emacs.d/.local/autosaves/\\1" t)))
+  '(auto-save-list-file-prefix (expand-file-name "~/.emacs.d/.local/auto-save-list/"))
+  '(backup-directory-alist '((".*" . "~/.emacs.d/.local/backups/")))
+  '(create-lockfiles nil)
+  '(helm-minibuffer-history-key "M-p")
+  '(inhibit-startup-screen t)
+  '(leetcode-prefer-language "cpp")
+  '(leetcode-save-solutions t)
+  '(package-selected-packages
+     '(jtsx sideline-eglot sideline-flymake sideline
+        highlight-indent-guides treemacs-nerd-icons treemacs python-ts
+        poetry dockerfile-mode popper spacious-padding afternoon-theme
+        ansible apheleia atom-one-dark-theme auto-dim-other-buffers
+        bazel beacon benchmark-init blamer centaur-tabs
+        challenger-deep-theme color-theme-sanityinc-tomorrow
+        company-posframe company-prescient company-qml corfu-terminal
+        counsel csv-mode cyberpunk-theme dashboard dashboard-hackernews
+        diminish disable-mouse easy-kill eglot elisp-autofmt elisp-def
+        elisp-refs elisp-slime-nav eterm-256color format-all general
+        google-c-style helm-rg highlight-numbers highlight-parentheses
+        imenu-list impatient-mode inkpot-theme ivy ivy-posframe
+        ivy-xref jdecomp jsonrpc key-chord known leetcode lispy
+        lsp-python-ms markdown-mode markdown-toc markdownfmt
+        modus-themes moe-theme mwim nano-theme neotree nimbus-theme
+        package-lint paredit phi-search popon popup-switcher popwin
+        prescient project projectsile-mode protobuf-mode py-autopep8
+        qml-mode rainbow-delimiters reformatter ripgrep rjsx-mode
+        selected slime slime-company smart-jump smart-mode-line
+        smooth-scrolling solaire-mode srcery-theme srefactor swift-mode
+        switch-buffer-functions symbol-overlay treemacs-all-the-icons
+        treesit-auto typescript-mode undo-tree valign vs-dark-theme
+        vscode-dark-plus-theme vterm vue-mode with-proxy
+        with-simulated-input xclip yasnippet))
+  '(pos-tip-background-color "#1d1d2b")
+  '(pos-tip-foreground-color "#d4d4d6")
+  '(recentf-save-file (expand-file-name "~/.emacs.d/.local/recentf"))
+  '(safe-local-variable-values
+     '((eval font-lock-add-keywords nil
+         `
+         ((,(concat "("
+              (regexp-opt
+                '("sp-do-move-op" "sp-do-move-cl" "sp-do-put-op"
+                   "sp-do-put-cl" "sp-do-del-op" "sp-do-del-cl")
+                t)
+              "\\_>")
+            1 'font-lock-variable-name-face)))))
+  '(warning-suppress-log-types '((emacs) (use-package) (lsp-mode)))
+  '(warning-suppress-types '((use-package) (lsp-mode)))
+  '(package-vc-selected-packages
+    '((claude-code :url "https://github.com/stevemolitor/claude-code.el")))
+  '(safe-local-variable-values
+    '((python-shell-interpreter-args . "python -i")
+       (python-shell-interpreter . "uv")
+       (eglot-server-programs
+       (python-mode "basedpyright-langserver" "--stdio"))
+       ))
+)
+
+
+
+
 
 ;;; init.el ends here

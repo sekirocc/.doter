@@ -33,6 +33,7 @@
 
 (use-package multi-vterm
   :ensure t
+  :config
   (setq multi-vterm-dedicated-window-height-percent 90)
   )
 
