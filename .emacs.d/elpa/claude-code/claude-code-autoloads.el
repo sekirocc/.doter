@@ -81,6 +81,27 @@ With double prefix ARG (\\[universal-argument] \\[universal-argument]), prompt
 for the project directory.
 
 (fn &optional ARG)" t)
+(autoload 'claude-code-sandbox "claude-code" "\
+Start Claude in sandbox mode using the configured sandbox binary.
+
+Uses the program specified in `claude-code-sandbox-program' to run Claude
+in a sandboxed environment.
+
+Prompts whether to add --dangerously-skip-permissions flag for bypassing
+Claude's permission checks.
+
+If current buffer belongs to a project start Claude in the project's root
+directory.  Otherwise start in the directory of the current buffer file,
+or the current value of `default-directory' if no project and no buffer
+file.
+
+With single prefix ARG (\\[universal-argument]), switch to buffer after
+creating.
+
+With double prefix ARG (\\[universal-argument] \\[universal-argument]),
+prompt for the project directory.
+
+(fn &optional ARG)" t)
 (autoload 'claude-code-send-region "claude-code" "\
 Send the current region to Claude.
 
