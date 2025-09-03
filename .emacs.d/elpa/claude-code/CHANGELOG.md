@@ -2,6 +2,25 @@
 
 All notable changes to claude-code.el will be documented in this file.
 
+## [0.4.4]
+
+### Added
+- Claude Code hooks integration support for executing shell commands in response to tool calls (#70)
+  - Allows custom automation via hook configurations in settings
+- New `claude-code-toggle-auto-select` customization option (#76)
+  - When set to `t`, automatically switches focus to Claude buffer after toggling it open
+  - Defaults to `nil` to preserve existing behavior
+
+### Changed
+- Reorganized slash commands menu for better usability (#71)
+  - Grouped commands by functionality instead of alphabetically
+  - Added missing slash commands (memory, add-dir, model, permissions, etc.)
+  - Improved key bindings with consistent uppercase for less common commands
+
+### Fixed
+- Fixed vterm advice persistence issue that could affect other vterm buffers (#74)
+  - Ensures vterm advice only applies to Claude Code buffers
+
 ### [0.4.3]
 
 ### Added

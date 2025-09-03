@@ -18,7 +18,7 @@ An Emacs interface for [Claude Code CLI](https://github.com/anthropics/claude-co
 - **Terminal Choice** - Works with both eat and vterm backends
 - **Fully Customizable** - Configure keybindings, notifications, and display preferences
 
-## Installation {#installation}
+## Installation
 
 ### Prerequisites
 
@@ -26,6 +26,11 @@ An Emacs interface for [Claude Code CLI](https://github.com/anthropics/claude-co
 - [Claude Code CLI](https://github.com/anthropics/claude-code) installed and configured
 - Required: transient (0.7.5+)
 - Optional: eat (0.9.2+) for eat backend, vterm for vterm backend
+  - Note: If not using a `:vc` install, the `eat` package requires NonGNU ELPA:
+    ```elisp
+    (add-to-list 'package-archives '("nongnu" . "https://elpa.nongnu.org/nongnu/"))
+    ```
+- Optional but recommended: [Monet](https://github.com/stevemolitor/monet) for IDE integration
 
 ### Using builtin use-package (Emacs 30+)
 
@@ -44,8 +49,17 @@ An Emacs interface for [Claude Code CLI](https://github.com/anthropics/claude-co
 ;; install claude-code.el
 (use-package claude-code :ensure t
   :vc (:url "https://github.com/stevemolitor/claude-code.el" :rev :newest)
-  :config (claude-code-mode)
-  :bind-keymap ("C-c c" . claude-code-command-map))
+  :config 
+  ;; optional IDE integration with Monet
+  (add-hook 'claude-code-process-environment-functions #'monet-start-server-function)
+  (monet-mode 1)
+  
+  (claude-code-mode)
+  :bind-keymap ("C-c c" . claude-code-command-map)
+  
+  ;; Optionally define a repeat map so that "M" will cycle thru Claude auto-accept/plan/confirm modes after invoking claude-code-cycle-mode / C-c M.
+  :bind
+  (:repeat-map my-claude-code-map ("M" . claude-code-cycle-mode)))
 ```
 
 ### Using straight.el
@@ -71,7 +85,14 @@ An Emacs interface for [Claude Code CLI](https://github.com/anthropics/claude-co
                    :files ("*.el" (:exclude "images/*")))
   :bind-keymap
   ("C-c c" . claude-code-command-map) ;; or your preferred key
+  ;; Optionally define a repeat map so that "M" will cycle thru Claude auto-accept/plan/confirm modes after invoking claude-code-cycle-mode / C-c M.
+  :bind
+  (:repeat-map my-claude-code-map ("M" . claude-code-cycle-mode)))
   :config
+  ;; optional IDE integration with Monet
+  (add-hook 'claude-code-process-environment-functions #'monet-start-server-function)
+  (monet-mode 1)
+
   (claude-code-mode))
 ```
 
@@ -141,6 +162,16 @@ Sometimes you want to send a quick response to Claude without switching to the C
 - `claude-code-send-1` (`C-c c 1`) - send "1" to Claude, to choose option "1" in response to a Claude query
 - `claude-code-send-2` (`C-c c 2`) - send "2" to Claude
 - `claude-code-send-3` (`C-c c 3`) - send "3" to Claude
+
+## IDE Integration with [Monet](https://github.com/stevemolitor/monet)
+You can optionally use [Monet](https://github.com/stevemolitor/monet) for IDE integration. To integrate Monet with Claude do this (or the equivalent `use-package` declaration shown above):
+
+```elisp
+(add-hook 'claude-code-process-environment-functions #'monet-start-server-function)
+(monet-mode 1)
+```
+
+When Claude starts a new instance it will automatically start a Monet websocket server to listen to and send IDE comments to/from Claude. Current selection will automatically be sent to Claude, and Claude will show diffs in Emacs, use Emacs Monet tools to open files, get diagnostics, etc. See the [Monet](https://github.com/stevemolitor/monet) documentation for more details.
 
 ## Working with Multiple Claude Instances
 
@@ -212,7 +243,7 @@ You can change this behavior by customizing `claude-code-newline-keybinding-styl
 - `claude-code-switch-to-buffer` (`C-c c b`) - Switch to the Claude buffer. With prefix arg (`C-u`), shows all Claude instances across all directories
 - `claude-code-select-buffer` (`C-c c B`) - Select and switch to a Claude buffer from all running instances across all projects and directories
 - `claude-code-toggle-read-only-mode` (`C-c c z`) - Toggle between read-only mode and normal mode in Claude buffer (useful for selecting and copying text)
-- `claude-code-cycle-mode` (`C-c c M`) - Send Shift-Tab to Claude to cycle between default mode, auto-accept edits mode, and plan mode
+- `claude-code-cycle-mode` (`C-c c M`) - Send Shift-Tab to Claude to cycle between default mode, auto-accept edits mode, and plan mode. See the installation section above to configure a repeat map so that you can cycle thru the modes with "M" after the initial invocation.
 
 - `claude-code-send-return` (`C-c c y`) - Send return key to Claude (useful for confirming with Claude without switching to the Claude REPL buffer) (useful for responding with "Yes"  to Claude)
 - `claude-code-send-escape` (`C-c c n`) - Send escape key to Claude (useful for saying "No" when Claude asks for confirmation without switching to the Claude REPL buffer)
@@ -290,6 +321,130 @@ For Windows, you can use PowerShell to create toast notifications:
 
 *Note: Linux and Windows examples are untested. Feedback and improvements are welcome!*
 
+### Claude Code Hooks Integration
+
+claude-code.el provides integration to **receive** hook events from Claude Code CLI via emacsclient. 
+
+See [`examples/hooks/claude-code-hook-examples.el`](examples/hooks/claude-code-hook-examples.el) for comprehensive examples of hook listeners and setup functions.
+
+#### Hook API
+
+- `claude-code-event-hook` - Emacs hook run when Claude Code CLI triggers events
+- `claude-code-handle-hook` - **Unified entry point** for all Claude Code CLI hooks. Call this from your CLI hooks with `(type buffer-name &rest args)` and JSON data as additional emacsclient arguments
+
+#### JSON Response System
+
+Hooks can return structured JSON data to control Claude Code behavior using `run-hook-with-args-until-success`:
+
+1. **Multiple handlers**: Register multiple functions on `claude-code-event-hook`
+2. **Sequential execution**: Functions are called in order with the message data  
+3. **First response wins**: Execution stops when a function returns non-nil JSON
+4. **Bidirectional communication**: The JSON response is sent back to Claude Code CLI
+
+This enables interactive workflows like permission prompts where hooks can influence Claude's behavior.
+
+#### Setup
+
+1. **Add the bin directory to your PATH** (required for hook wrapper script):
+   ```bash
+   export PATH="/path/to/claude-code.el/bin:$PATH"
+   ```
+   Add this to your bash configuration file (~/.bashrc, ~/.bash_profile, etc.) since Claude Code needs it in the bash environment.
+
+2. **Start the Emacs server** so that `emacsclient` can communicate with your Emacs instance:
+   ```elisp
+   ;; Start the Emacs server (add this to your init.el)
+   (start-server)
+
+   ;; Add your hook listeners using standard Emacs functions
+   (add-hook 'claude-code-event-hook 'my-claude-hook-listener)
+   ```
+
+#### Custom Hook Listener
+
+Hook listeners receive a message plist with these keys:
+- `:type` - Hook type (e.g., `'notification`, `'stop`, `'pre-tool-use`, `'post-tool-use`)
+- `:buffer-name` - Claude buffer name from `$CLAUDE_BUFFER_NAME`
+- `:json-data` - JSON payload from Claude CLI
+- `:args` - List of additional arguments (when using extended configuration)
+
+```elisp
+;; Define your own hook listener function
+(defun my-claude-hook-listener (message)
+  "Custom listener for Claude Code hooks.
+MESSAGE is a plist with :type, :buffer-name, :json-data, and :args keys."
+  (let ((hook-type (plist-get message :type))
+        (buffer-name (plist-get message :buffer-name))
+        (json-data (plist-get message :json-data))
+        (args (plist-get message :args)))
+    (cond 
+     ((eq hook-type 'notification)
+      (message "Claude is ready in %s! JSON: %s" buffer-name json-data))
+     ((eq hook-type 'stop)  
+      (message "Claude finished in %s! JSON: %s" buffer-name json-data))
+     (t
+      (message "Claude hook: %s with JSON: %s" hook-type json-data)))))
+
+;; Add the hook listener using standard Emacs hook functions
+(add-hook 'claude-code-event-hook 'my-claude-hook-listener)
+```
+
+See the examples file for complete listeners that demonstrate notifications, logging, org-mode integration, and using extra arguments from the `:args` field.
+
+#### Claude Code CLI Configuration
+
+Configure Claude Code CLI hooks to call `claude-code-handle-hook` via emacsclient by passing JSON data as an additional argument:
+
+```json
+{
+  "hooks": {
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "emacsclient --eval \"(claude-code-handle-hook 'notification \\\"$CLAUDE_BUFFER_NAME\\\")\" \"$(cat)\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "emacsclient --eval \"(claude-code-handle-hook 'stop \\\"$CLAUDE_BUFFER_NAME\\\")\" \"$(cat)\""
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+The command pattern:  
+```bash
+emacsclient --eval "(claude-code-handle-hook 'notification \"$CLAUDE_BUFFER_NAME\")" "$(cat)" "ARG1" "ARG2" "ARG3"
+```
+
+Where:
+- `"$(cat)"` - JSON data from stdin (always required)
+- `ARG1` is `"$PWD"` - current working directory  
+- `ARG2` is `"$(date -Iseconds)"` - timestamp
+- `ARG3` is `"$$"` - process ID
+
+`claude-code-handle-hook` creates a message plist sent to listeners:
+```elisp
+(list :type 'notification 
+      :buffer-name "$CLAUDE_BUFFER_NAME"
+      :json-data "$(cat)" 
+      :args '("ARG1" "ARG2" "ARG3"))
+```
+
+See the [Claude Code hooks documentation](https://docs.anthropic.com/en/docs/claude-code/hooks) for details on setting up CLI hooks.
+
 ## Tips and Tricks
 
 - **Paste images**: Use `C-v` to paste images into the Claude window. Note that on macOS, this is `Control-v`, not `Command-v`.
@@ -300,7 +455,17 @@ For Windows, you can use PowerShell to create toast notifications:
   ;; If files aren't reliably auto-reverting after Claude makes changes,
   ;; disable file notification and use polling instead:
   (setq auto-revert-use-notify nil)
-  ``` 
+  ```
+- **Auto-revert with hooks**: For more control over buffer reverting, use the auto-revert hook example that listens for Claude's file edits:
+  ```elisp
+  ;; Load the auto-revert hook
+  (load-file "examples/hooks/claude-code-auto-revert-hook.el")
+  ;; Set up auto-revert (choose one):
+  (setup-claude-auto-revert)           ; Safe mode - skips modified buffers
+  (setup-claude-auto-revert-aggressive) ; Prompts to revert modified buffers
+  (setup-claude-auto-revert-org)       ; Special handling for org files
+  ```
+  Then configure the PostToolUse hook in your `~/.claude/settings.json` (see `examples/hooks/auto-revert-settings.json`) 
 
 ## Customization
 
@@ -374,6 +539,12 @@ For Windows, you can use PowerShell to create toast notifications:
 ;; when you run delete-other-windows or similar commands, keeping the
 ;; Claude buffer visible and accessible.
 (setq claude-code-no-delete-other-windows t)
+
+;; Automatically select the Claude buffer when toggling it open (default is nil)
+;; When set to t, claude-code-toggle will switch focus to the Claude buffer
+;; after displaying it. When nil, the buffer is displayed but focus remains
+;; in the current buffer.
+(setq claude-code-toggle-auto-select t)
 ```
 
 ### Customizing Window Position
@@ -583,4 +754,3 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## License
 
 This project is licensed under the Apache License 2.0 - see the LICENSE file for details.
-
