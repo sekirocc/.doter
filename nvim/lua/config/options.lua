@@ -190,9 +190,17 @@ function M.setup()
       buffers = 'tabsel'
     },
     component_function = {
-      filename = 'LightlineTruncatedFileName'
+      filename = 'LightlineRelativeFilename'
     },
   }
+
+  -- 用 vim.cmd 定义一个 Vim script 函数
+  vim.cmd([[
+    function! LightlineRelativeFilename()
+      let l:filepath = expand('%:p:.')
+      return empty(l:filepath) ? '[No Name]' : l:filepath
+    endfunction
+  ]])
 
   -- Lightline-bufferline 过滤特殊 buffer
   g['lightline#bufferline#exclude_ft'] = { 'help', 'man', 'qf', 'fugitive', 'NvimTree', 'TelescopePrompt', 'claude' }
