@@ -131,6 +131,21 @@ exists it returns /file/name_Copy2.ext etc."
         (setf new-path (treemacs-join-path dir (concat filename-no-ext (format template n) ext))))
       new-path))
 
+  ;;
+  ;; 隐藏 python 的一些忽略文件
+  ;;
+  (defun my/treemacs-ignore-pycache-and-egg-info (file-name abs-path)
+  "Ignore __pycache__ directories and *.egg-info directories."
+  (or
+   ;; 忽略名为 __pycache__ 的目录
+   (string= file-name "__pycache__")
+   ;; 忽略以 .egg-info 结尾的目录
+   (string-suffix-p ".egg-info" file-name)
+   ;; 可选：忽略 .pyc 文件（如果你也想隐藏单个 .pyc）
+   ;; (string-suffix-p ".pyc" file-name)
+   ))
+  (add-to-list 'treemacs-ignored-file-predicates #'my/treemacs-ignore-pycache-and-egg-info)
+
 
 
   (add-hook 'treemacs-mode-hook #'my-add-padding-for-treemacs)
