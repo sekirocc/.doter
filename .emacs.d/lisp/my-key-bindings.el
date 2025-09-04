@@ -22,7 +22,10 @@
 
 
 
-(bind-key* (kbd "C-c C-v") #'set-rectangular-region-anchor)
+(bind-key* (kbd "C-c C-v") #'rectangle-mark-mode)
+(with-eval-after-load 'rect
+  (define-key rectangle-mark-mode-map (kbd "i") 'string-rectangle))
+
 ;; C-c C-o is preserved by ivy-occur, which is usefull when you want save ivy results to a temp buffer.
 ;; so we change to C-c o
 (bind-key* (kbd "C-c o") #'my-occur)
