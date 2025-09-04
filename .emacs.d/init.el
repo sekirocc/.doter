@@ -321,6 +321,13 @@
 ;; (define-key cnfonts-mode-map (kbd "C-=") #'cnfonts-increase-fontsize)
 (setq cnfonts-personal-fontnames '(("IBM Plex Mono") ("IBM Plex Sans SC" "PingFang SC" "等距更纱黑体 SC")))
 
+;; Emoji 字体调小一点
+(when (member "Apple Color Emoji" (font-family-list))
+  (set-fontset-font "fontset-default"
+                    'unicode
+                    (font-spec :family "Apple Color Emoji" :size 12)
+                    nil 'append))
+
 
 
 ;;; Basic Editing Enhancements
