@@ -21,7 +21,7 @@
   (setq-default deadgrep--context (cons 2 2))
   (setq-default deadgrep-max-line-length 2000)
   :bind
-  (("C-c g" . deadgrep)
+  ( ;; ("C-c g" . deadgrep)
     :map
     deadgrep-mode-map
     ("RET" . deadgrep-visit-result)
