@@ -413,6 +413,17 @@
 (require 'init-deadgrep)
 (require 'init-dired-ibuffer)
 
+;;; rg.el
+(use-package rg
+  :ensure nil
+  :bind
+  (
+    ("C-c g" . rg)
+  )
+  :config
+  (setq rg-command-line-flags '("--context" "2"))
+)
+
 ;;; ===================================================================
 ;;; DEVELOPMENT TOOLS & IDE FEATURES
 ;;; ===================================================================

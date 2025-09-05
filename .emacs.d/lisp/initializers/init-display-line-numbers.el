@@ -2,7 +2,8 @@
   :defer t
   :config
   ;; line number fixed width
-  (setq display-line-numbers-width-start 100)
+  (setq-default display-line-numbers-width-start 1000)
+  (setq-default display-line-numbers-grow-only t)
   :hook
   (prog-mode . display-line-numbers-mode)
   (markdown-mode . display-line-numbers-mode)

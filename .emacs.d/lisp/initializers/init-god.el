@@ -31,6 +31,7 @@
                        "*Completions*"
                        "*vc-diff*"
                        "*Packages"
+                       "*rg*"
                        "*lsp-log*"
                        "*Help*"
                        "*Ivy"

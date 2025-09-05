@@ -126,7 +126,7 @@
     (define-key map (kbd "s-d") #'my-mc/mark-next-like-this)
 
     (define-key map (kbd "s-S") #'projectile-ripgrep)
-    (define-key map (kbd "s-F") #'deadgrep)
+    (define-key map (kbd "s-F") #'rg)
 
     ;; (define-key map (kbd "C-M-f") #'projectile-find-file)
     ;; (define-key map (kbd "C-x C-b") #'switch-to-buffer)
@@ -284,6 +284,7 @@
     (define-key god-local-mode-map (kbd "SPC f") #'my-projectile-find-file)
     (define-key god-local-mode-map (kbd "SPC p") #'my-find-files)
     (define-key god-local-mode-map (kbd "SPC m") #'deadgrep)
+    (define-key god-local-mode-map (kbd "SPC r") #'rg-dwim)
     (define-key god-local-mode-map (kbd "SPC o") #'cff-find-other-file)    ;; switch between c header/source file
     (define-key god-local-mode-map (kbd "SPC L") #'display-line-numbers-mode)
     (define-key god-local-mode-map (kbd "SPC t") #'my-toggle-truncate-lines-and-word-wrap)
