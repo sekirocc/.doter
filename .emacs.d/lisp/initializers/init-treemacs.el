@@ -147,6 +147,12 @@ exists it returns /file/name_Copy2.ext etc."
   (add-to-list 'treemacs-ignored-file-predicates #'my/treemacs-ignore-pycache-and-egg-info)
 
 
+  ;; 鼠标放上去的效果，加了下划线和 hl line 的背景色
+  (defface treemacs-button-underline-only
+    '((t :underline t :foreground nil :background nil :box nil :inherit 'my-treemacs-custom-line-highlight))
+    "Face that only adds an underline on hover, no background color."
+    :group 'treemacs-faces)
+  (put 'treemacs-button 'mouse-face 'treemacs-button-underline-only)
 
   (add-hook 'treemacs-mode-hook #'my-add-padding-for-treemacs)
   (add-hook 'treemacs-mode-hook #'display-treemacs-widow-in-ace-window-selection)
