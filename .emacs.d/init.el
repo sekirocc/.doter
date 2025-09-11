@@ -324,9 +324,9 @@
 ;; Emoji 字体调小一点
 (when (member "Apple Color Emoji" (font-family-list))
   (set-fontset-font "fontset-default"
-                    'unicode
-                    (font-spec :family "Apple Color Emoji" :size 12)
-                    nil 'append))
+    'unicode
+    (font-spec :family "Apple Color Emoji" :size 12)
+    nil 'append))
 
 
 
@@ -419,10 +419,10 @@
   :bind
   (
     ("C-c g" . rg)
-  )
+    )
   :config
   (setq rg-command-line-flags '("--context" "2"))
-)
+  )
 
 ;;; ===================================================================
 ;;; DEVELOPMENT TOOLS & IDE FEATURES
@@ -695,6 +695,8 @@
   '(mode-line-highlight ((t (:box nil :foreground "green"))))
   '(mode-line-inactive ((t (:background "#1a202c" :foreground "#a0aec0" :box nil :underline nil))))
   '(region ((t (:background "#214283" :distant-foreground "#707080"))))
+  '(rg-context-face ((t (:inherit nil :foreground "#C6B8AD"))))
+  '(rg-match-face ((t (:inherit lazy-highlight))))
   '(ripgrep-match-face ((t (:inherit my-highlight-font-words-face))))
   '(shadow ((t (:foreground "#444444"))))
   '(show-paren-match ((t (:foreground "green" :background "#11501B" :weight normal :underline (:position t)))))
