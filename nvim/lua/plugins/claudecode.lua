@@ -1,5 +1,21 @@
 local toggle_key = "<C-t>"
 
+-- ClaudeCode terminal command switcher using environment variable
+local function switch_claude_terminal_cmd(new_cmd)
+  vim.env.CLAUDE_TERMINAL_CMD = new_cmd
+  print("Switched ClaudeCode terminal command to: " .. new_cmd)
+  print("Please restart Claude Code for the change to take effect: :ClaudeCode")
+end
+
+-- Create user commands for switching terminal commands
+vim.api.nvim_create_user_command('ClaudeDefault', function()
+  switch_claude_terminal_cmd('claude')
+end, {})
+
+vim.api.nvim_create_user_command('ClaudeCCR', function()
+  switch_claude_terminal_cmd('ccr code')
+end, {})
+
 return {
   {
     "coder/claudecode.nvim",
@@ -31,9 +47,8 @@ return {
       { "<leader>ad", "<cmd>ClaudeCodeDiffDeny<cr>", desc = "Deny diff" },
     },
     opts = {
-      -- 自定义 claude 命令
-      -- terminal_cmd = "claude", -- 可以改为自定义路径，如 "/path/to/my/claude"
-      terminal_cmd = "ccr code",  -- claude-code-router，可以使用 openai 或者 cerebras 的模型
+      -- 动态获取终端命令，支持运行时切换
+      terminal_cmd = vim.env.CLAUDE_TERMINAL_CMD or "claude",
 
       terminal = {
         -- 终端提供者
