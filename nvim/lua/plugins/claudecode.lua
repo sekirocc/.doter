@@ -1,4 +1,4 @@
-local toggle_key = "<C-,>"
+local toggle_key = "<C-t>"
 
 return {
   {
@@ -8,6 +8,8 @@ return {
     keys = {
       -- 主要的 toggle 快捷键
       { toggle_key, "<cmd>ClaudeCodeFocus<cr>", desc = "Claude Code", mode = { "n", "x" } },
+      -- 备用快捷键，如果 C-t 也有问题
+      { "<C-,>", "<cmd>ClaudeCodeFocus<cr>", desc = "Claude Code (backup)", mode = { "n", "x" } },
 
       -- 其他常用快捷键
       { "<leader>a", nil, desc = "AI/Claude Code" },
@@ -36,6 +38,9 @@ return {
           position = "float",
           width = 0.9,
           height = 0.9,
+          border = "rounded",
+          title = " Claude Code ",
+          title_pos = "center",
           keys = {
             claude_hide = {
               toggle_key,

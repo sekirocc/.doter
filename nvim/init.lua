@@ -2,6 +2,9 @@
 -- Neovim Configuration - Modular Structure
 -- ═══════════════════════════════════════════════════════════════════════════════
 
+-- Set leader key BEFORE loading lazy.nvim
+vim.g.mapleader = " "
+
 -- Bootstrap and setup lazy.nvim
 require('config.lazy').setup()
 
