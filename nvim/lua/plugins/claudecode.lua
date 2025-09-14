@@ -32,7 +32,8 @@ return {
     },
     opts = {
       -- 自定义 claude 命令
-      terminal_cmd = "claude", -- 可以改为自定义路径，如 "/path/to/my/claude"
+      -- terminal_cmd = "claude", -- 可以改为自定义路径，如 "/path/to/my/claude"
+      terminal_cmd = "ccr code",  -- claude-code-router，可以使用 openai 或者 cerebras 的模型
 
       terminal = {
         -- 终端提供者
