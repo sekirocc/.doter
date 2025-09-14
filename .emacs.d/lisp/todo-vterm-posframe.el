@@ -8,7 +8,8 @@
   "获取或创建 vterm buffer。"
   (unless (and my/vterm-posframe-buffer
             (buffer-live-p my/vterm-posframe-buffer))
-    (let ((buf (generate-new-buffer "*vterm-posframe*")))
+    (let ((buf (generate-new-buffer "*vterm-posframe*"))
+           (vterm-shell "claude"))
       (with-current-buffer buf
         (vterm-mode))
       (setq my/vterm-posframe-buffer buf)))
@@ -25,8 +26,8 @@
     (posframe-show buffer
       :buffer buffer
       :position (point)
-      :width 150
-      :height 50
+      :width (* (/ (frame-width) 4) 3)
+      :height (* (/ (frame-height) 4) 3)
       :window-point (with-current-buffer buffer (point-max))
       :border-width ivy-posframe-border-width
       :border-color "green"
@@ -40,7 +41,7 @@
   "确保 vterm posframe 滚动到底部。"
   (let ((buffer my/vterm-posframe-buffer))
     (when (and (buffer-live-p buffer)
-            (posframe-visible-p))
+            (my/vterm-posframe-visible-p))
       (with-current-buffer buffer
         (goto-char (point-max)))
       (dolist (win (get-buffer-window-list buffer nil t))
@@ -78,9 +79,10 @@
 
 (defun my/vterm-posframe-visible-p ()
   "使用 frame 的 visible-p 属性判断。"
-  (and my/vterm-posframe-buffer
-    (frame-live-p (get-frame-by-buffer-name (buffer-name my/vterm-posframe-buffer)))
-    (frame-visible-p (get-frame-by-buffer-name (buffer-name my/vterm-posframe-buffer)))))
+  (let ((buffer my/vterm-posframe-buffer))
+    (and buffer
+      (frame-live-p (get-frame-by-buffer-name (buffer-name buffer)))
+      (frame-visible-p (get-frame-by-buffer-name (buffer-name buffer))))))
 
 (defun my/vterm-posframe-toggle ()
   "切换 vterm posframe 的显示状态。"
