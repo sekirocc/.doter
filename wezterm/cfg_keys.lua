@@ -69,6 +69,7 @@ cfg.keys = {
   { mods = "CTRL",              key = "X",  action = "ShowLauncher"},
   { mods = "CTRL",              key = "q",  action = wezterm.action.SendString '\x11'         }, -- ctrl-q      send ctrl-q
   { mods = "CTRL",              key = "/",  action = wezterm.action.SendString '\x1f'         }, -- ctrl-/      send ctrl-/, which is equal with ctrl-_
+  { mods = "CTRL",              key = ",",  action = wezterm.action.SendKey{key=",", mods="CTRL"} }, -- ctrl-,      pass through to neovim
 
   -- {mods = "CTRL", key = "0", action = "ResetFontSize"}, -- Ctrl-Shift-0
 }

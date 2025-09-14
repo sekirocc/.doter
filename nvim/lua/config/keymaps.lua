@@ -14,74 +14,22 @@ function M.setup()
   -- Leader key
   vim.g.mapleader = " "
 
-  -- AI/Claude Code keymaps
-  keymap("n", "<leader>ac", "<cmd>ClaudeCode<cr>", { desc = "Toggle Claude" })
-  keymap("n", "<leader>af", "<cmd>ClaudeCodeFocus<cr>", { desc = "Focus Claude" })
-  keymap("n", "<leader>ar", "<cmd>ClaudeCode --resume<cr>", { desc = "Resume Claude" })
-  keymap("n", "<leader>aC", "<cmd>ClaudeCode --continue<cr>", { desc = "Continue Claude" })
-  keymap("n", "<leader>am", "<cmd>ClaudeCodeSelectModel<cr>", { desc = "Select Claude model" })
-  keymap("n", "<leader>ab", "<cmd>ClaudeCodeAdd %<cr>", { desc = "Add current buffer" })
-  keymap("v", "<leader>as", "<cmd>ClaudeCodeSend<cr>", { desc = "Send to Claude" })
-
-  -- Claude Code diff management
-  keymap("n", "<leader>aa", "<cmd>ClaudeCodeDiffAccept<cr>", { desc = "Accept diff" })
-  keymap("n", "<leader>ad", "<cmd>ClaudeCodeDiffDeny<cr>", { desc = "Deny diff" })
+  -- AI/Claude Code keymaps are now handled by lazy.nvim in plugins/claudecode.lua
 
   -- Easymotion
   vim.api.nvim_set_keymap("n", "f", "<Plug>(easymotion-bd-w)", { noremap=true, silent=true })
 
-  -- Telescope
-  local builtin = require('telescope.builtin')
-  local file_browser = require("telescope").extensions.file_browser
-  local recent_files = require("telescope").extensions.recent_files
-  local telescope_dir = require("telescope").extensions.dir
+  -- Telescope keymaps are now handled by lazy.nvim in plugins/telescope.lua
 
-  local custom_find_files = function()
-    builtin.find_files {
-      find_command = { 'rg', '--files', '--iglob', '!.git', '--hidden' },
-      previewer = false
-    }
-  end
+  -- NvimTree keymaps are now handled by lazy.nvim in plugins/file-tree.lua
 
-  keymap('n', '<leader>f', custom_find_files, {})
-  keymap('n', '<leader>g', builtin.live_grep, {})
-  keymap('n', '<leader>G', builtin.grep_string, {})
-  keymap('n', '<leader>b', builtin.buffers, {})
-  keymap('n', '<leader>s', builtin.lsp_document_symbols, {})
-  keymap('n', '<leader>p', file_browser.file_browser, {})
-  keymap('n', 'F', custom_find_files, {})
-  keymap('n', '<leader>F', recent_files.pick, {})
-  keymap('n', '<leader>df', telescope_dir.find_files, {})
-  keymap('n', '<leader>dg', telescope_dir.live_grep, {})
+  -- Vista keymaps are now handled by lazy.nvim in plugins/navigation.lua
 
-  -- NvimTree
-  local function find_and_focus_file()
-    require('nvim-tree.api').tree.find_file({
-      focus = true,
-      open = true,
-    })
-  end
+  -- Comment keymaps are now handled by lazy.nvim in plugins/comments.lua
 
-  vim.api.nvim_set_keymap("n", "<leader>n", ":NvimTreeToggle<CR>", { noremap = true })
-  vim.api.nvim_set_keymap("n", "<leader>r", ":NvimTreeRefresh<CR>", { noremap = true })
-  vim.api.nvim_set_keymap("n", "<leader>N", ":NvimTreeFindFile<CR>", { noremap = true })
-  keymap('n', '@', find_and_focus_file, { noremap = true })
+  -- CtrlSF keymaps are now handled by lazy.nvim in plugins/navigation.lua
 
-  -- Vista
-  vim.api.nvim_set_keymap("n", "<Leader>v", ":Vista!!<CR>", { noremap = true })
-
-  -- Comments
-  vim.api.nvim_set_keymap("n", "<A-/>", "<Plug>kommentary_line_default", {})
-  vim.api.nvim_set_keymap("v", "<A-/>", "<Plug>kommentary_visual_default", {})
-  vim.api.nvim_set_keymap("i", "<A-/>", "<Plug>kommentary_line_default", {})
-
-  -- CtrlSF
-  vim.api.nvim_set_keymap("n", "<Leader>m", "<Plug>CtrlSFCwordPath", { noremap = true })
-  vim.api.nvim_set_keymap("v", "<Leader>m", "<Plug>CtrlSFVwordExec<CR>", { noremap = true })
-  vim.api.nvim_set_keymap("n", "<Leader>O", ":CtrlSFOpen<CR> ", { noremap = true })
-
-  -- Prettier
-  vim.api.nvim_set_keymap("n", "<Leader>R", ":<Plug>(Prettier):retab", { noremap = true })
+  -- Prettier keymaps are now handled by lazy.nvim in plugins/editing.lua
 
   -- Insert mode emacs-like keybindings
   vim.api.nvim_set_keymap("i", "<C-d>", "<C-o>x", { noremap = true })
@@ -229,7 +177,7 @@ function M.setup()
   keymap("n", "Q", "<nop>", { desc = "Disabled" })
 
   -- CMP completion
-  vim.keymap.set("i", "<C-Tab>", function() require('cmp').mapping.complete() end, { noremap = true })
+  -- nvim-cmp keymaps are now handled by lazy.nvim in plugins/completion.lua
 
   -- Function key mappings (moved from init.lua)
   keymap("n", "<F3>", "<cmd>set wrap!<cr>", { desc = "Toggle line wrap" })
