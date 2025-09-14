@@ -26,6 +26,12 @@ function M.setup()
       print("HTTPS_PROXY: " .. https_proxy)
   end
 
+  -- 通用环境变量设置函数
+  local function set_env(var_name, value)
+    vim.env[var_name] = value
+    print(string.format("Set %s=%s", var_name, value))
+  end
+
   -- 创建用户命令
   vim.api.nvim_create_user_command('SetProxy', function(opts)
       set_proxy(opts.args)
@@ -33,6 +39,18 @@ function M.setup()
 
   vim.api.nvim_create_user_command('ClearProxy', clear_proxy, {})
   vim.api.nvim_create_user_command('ShowProxy', show_proxy, {})
+
+  vim.api.nvim_create_user_command('SetEnv', function(opts)
+    local args = vim.split(opts.args, '=', { plain = true })
+    if #args == 2 then
+      set_env(args[1], args[2])
+    else
+      print("Usage: :SetEnv VAR_NAME=value")
+    end
+  end, {
+    nargs = 1,
+    desc = "Set environment variable (format: VAR=value)"
+  })
 
   -- 默认的代理
   set_proxy('http://localhost:9910')

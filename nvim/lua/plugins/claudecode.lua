@@ -31,7 +31,13 @@ return {
       { "<leader>ad", "<cmd>ClaudeCodeDiffDeny<cr>", desc = "Deny diff" },
     },
     opts = {
+      -- 自定义 claude 命令
+      terminal_cmd = "claude", -- 可以改为自定义路径，如 "/path/to/my/claude"
+
       terminal = {
+        -- 终端提供者
+        provider = "snacks",
+
         ---@module "snacks"
         ---@type snacks.win.Config|{}
         snacks_win_opts = {
@@ -50,6 +56,12 @@ return {
               mode = "t",
               desc = "Hide",
             },
+          },
+          -- 环境变量配置
+          env = {
+            -- 在这里添加你的环境变量
+            -- 例如：HTTP_PROXY = "http://localhost:9910",
+            -- 或者：CLAUDE_API_KEY = "your_key_here",
           },
         },
       },
