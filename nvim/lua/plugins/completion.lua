@@ -90,18 +90,14 @@ return {
             if cmp.visible() then
               cmp.close()
             else
-              fallback()
+              -- 在命令行模式模拟 Ctrl-c 退出，其他模式正常 fallback
+              if vim.fn.mode() == 'c' then
+                vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<C-c>', true, true, true), 'n', true)
+              else
+                fallback()
+              end
             end
-          end, { "i", "s" }),
-
-          ['<Esc>'] = cmp.mapping(function(fallback)
-            if cmp.visible() then
-              cmp.close()
-            else
-              -- 模拟按键退出命令行模式到编辑器
-              vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<C-c>', true, true, true), 'n', true)
-            end
-          end, { "c" }),
+          end, { "i", "s", "c" }),
 
         },
 

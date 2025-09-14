@@ -25,13 +25,7 @@ return {
     end,
     config = function()
       require("which-key").setup({
-        triggers_blacklist = {
-          -- 排除 Claude Code 的快捷键
-          n = { "<C-,>" },
-          i = { "<C-,>" },
-          v = { "<C-,>" },
-          x = { "<C-,>" },
-        },
+        -- 使用默认配置，which-key 不应该干扰 <C-,>
       })
     end,
   },

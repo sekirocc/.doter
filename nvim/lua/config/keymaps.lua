@@ -11,9 +11,6 @@ end
 function M.setup()
   local keymap = vim.keymap.set
 
-  -- Leader key
-  vim.g.mapleader = " "
-
   -- AI/Claude Code keymaps are now handled by lazy.nvim in plugins/claudecode.lua
 
   -- Easymotion

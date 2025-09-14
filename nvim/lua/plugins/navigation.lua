@@ -22,8 +22,8 @@ return {
   {
     "dyng/ctrlsf.vim",
     keys = {
-      { "<leader>sf", desc = "CtrlSF Search" },
-      { "<leader>st", desc = "CtrlSF Toggle" },
+      { "<leader>sf", "<cmd>CtrlSF ", desc = "CtrlSF Search" },
+      { "<leader>st", "<cmd>CtrlSFToggle<cr>", desc = "CtrlSF Toggle" },
       { "<leader>O", "<cmd>CtrlSFOpen<cr>", desc = "CtrlSF Open" },
       { "<leader>m", "<Plug>CtrlSFCwordPath", desc = "Search Word Under Cursor" },
       { "<leader>m", "<Plug>CtrlSFVwordExec<cr>", mode = "v", desc = "Search Selection" },
