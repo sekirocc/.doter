@@ -6,7 +6,7 @@
 ;; Version: 1.1.0
 ;; Package-Requires: ((emacs "26.1") (posframe "1.0.0") (vterm "0.0.1"))
 ;; Keywords: convenience, terminal, claude
-;; URL: 
+;; URL:
 
 ;;; Commentary:
 
@@ -32,8 +32,8 @@
   "Check if required dependencies are available."
   (unless claude-posframe--dependencies-available
     (setq claude-posframe--dependencies-available
-          (and (require 'posframe nil t)
-               (require 'vterm nil t))))
+      (and (require 'posframe nil t)
+        (require 'vterm nil t))))
   claude-posframe--dependencies-available)
 
 (defgroup claude-posframe nil
@@ -69,10 +69,10 @@
 (defcustom claude-posframe-position 'center
   "Position of the posframe."
   :type '(choice (const :tag "Center" center)
-                 (const :tag "Top" top)
-                 (const :tag "Bottom" bottom)
-                 (const :tag "Left" left)
-                 (const :tag "Right" right))
+           (const :tag "Top" top)
+           (const :tag "Bottom" bottom)
+           (const :tag "Left" left)
+           (const :tag "Right" right))
   :group 'claude-posframe)
 
 (defcustom claude-posframe-min-width 80
@@ -90,8 +90,15 @@
   :type 'boolean
   :group 'claude-posframe)
 
-(defvar claude-posframe-buffer nil
-  "Buffer containing the claude vterm instance.")
+(defcustom claude-posframe-working-directory nil
+  "Working directory for the claude vterm process.
+If nil, use the home directory to ensure consistent behavior."
+  :type '(choice (const :tag "Home directory" nil)
+                 (directory :tag "Custom directory"))
+  :group 'claude-posframe)
+
+(defconst claude-posframe-buffer-name "*claude-posframe*"
+  "Name of the claude posframe buffer.")
 
 ;; Hooks
 (defvar claude-posframe-show-hook nil
@@ -103,22 +110,6 @@
 (defvar claude-posframe-kill-hook nil
   "Hook run before killing the claude posframe buffer.")
 
-(defun claude-posframe--get-buffer ()
-  "Get or create the claude vterm buffer."
-  (unless (claude-posframe--check-dependencies)
-    (user-error "Required dependencies (posframe, vterm) are not available"))
-  (unless (and claude-posframe-buffer
-               (buffer-live-p claude-posframe-buffer))
-    (let ((buf (generate-new-buffer "*claude-posframe*"))
-          (vterm-shell claude-posframe-shell))
-      (with-current-buffer buf
-        (condition-case err
-            (vterm-mode)
-          (error
-           (kill-buffer buf)
-           (signal (car err) (cdr err)))))
-      (setq claude-posframe-buffer buf)))
-  claude-posframe-buffer)
 
 (defun claude-posframe--get-position-handler ()
   "Get the position handler based on customization."
@@ -133,9 +124,9 @@
 (defun claude-posframe--calculate-dimensions ()
   "Calculate posframe dimensions with minimum constraints."
   (let ((width (max claude-posframe-min-width
-                    (round (* (frame-width) claude-posframe-width-ratio))))
-        (height (max claude-posframe-min-height
-                     (round (* (frame-height) claude-posframe-height-ratio)))))
+                 (round (* (frame-width) claude-posframe-width-ratio))))
+         (height (max claude-posframe-min-height
+                   (round (* (frame-height) claude-posframe-height-ratio)))))
     (list width height)))
 
 ;;;###autoload
@@ -145,38 +136,39 @@
   (unless (claude-posframe--check-dependencies)
     (user-error "Required dependencies (posframe, vterm) are not available"))
   (let* ((buffer (claude-posframe--get-buffer))
-         (dimensions (claude-posframe--calculate-dimensions))
-         (width (car dimensions))
-         (height (cadr dimensions)))
+          (dimensions (claude-posframe--calculate-dimensions))
+          (width (car dimensions))
+          (height (cadr dimensions)))
     (posframe-show buffer
-                   :buffer buffer
-                   :position (point)
-                   :width width
-                   :height height
-                   :window-point (when claude-posframe-auto-scroll
-                                   (with-current-buffer buffer (point-max)))
-                   :border-width claude-posframe-border-width
-                   :border-color claude-posframe-border-color
-                   :poshandler (claude-posframe--get-position-handler)
-                   :accept-focus t)
+      :buffer buffer
+      :position (point)
+      :width width
+      :height height
+      :window-point (when claude-posframe-auto-scroll
+                      (with-current-buffer buffer (point-max)))
+      :border-width claude-posframe-border-width
+      :border-color claude-posframe-border-color
+      :poshandler (claude-posframe--get-position-handler)
+      :accept-focus t)
     (when claude-posframe-auto-scroll
       (claude-posframe--ensure-scroll))
     (run-hooks 'claude-posframe-show-hook)))
 
 (defun claude-posframe--ensure-scroll ()
   "Ensure the claude posframe scrolls to bottom."
-  (when (and claude-posframe-buffer
-             (buffer-live-p claude-posframe-buffer)
-             (claude-posframe-visible-p))
-    (let ((windows (get-buffer-window-list claude-posframe-buffer nil t)))
-      (when windows
-        (with-current-buffer claude-posframe-buffer
-          (goto-char (point-max)))
-        (dolist (win windows)
-          (when (window-live-p win)
-            (with-selected-window win
-              (goto-char (point-max))
-              (recenter -1))))))))
+  (let ((buffer (get-buffer claude-posframe-buffer-name)))
+    (when (and buffer
+               (buffer-live-p buffer)
+               (claude-posframe-visible-p))
+      (let ((windows (get-buffer-window-list buffer nil t)))
+        (when windows
+          (with-current-buffer buffer
+            (goto-char (point-max)))
+          (dolist (win windows)
+            (when (window-live-p win)
+              (with-selected-window win
+                (goto-char (point-max))
+                (recenter -1)))))))))
 
 
 
@@ -184,50 +176,50 @@
 (defun claude-posframe-hide ()
   "Hide the claude posframe."
   (interactive)
-  (when (and claude-posframe-buffer
-             (buffer-live-p claude-posframe-buffer))
-    (posframe-hide claude-posframe-buffer)
-    (run-hooks 'claude-posframe-hide-hook)))
+  (let ((buffer (get-buffer claude-posframe-buffer-name)))
+    (when (and buffer (buffer-live-p buffer))
+      (posframe-hide buffer)
+      (run-hooks 'claude-posframe-hide-hook))))
 
 
 (defun claude-posframe-visible-p ()
   "Check if the claude posframe is visible."
-  (and claude-posframe-buffer
-       (buffer-live-p claude-posframe-buffer)
-       (let ((window (get-buffer-window claude-posframe-buffer t)))
-         (and window
-              (window-live-p window)
-              (let ((frame (window-frame window)))
-                (and frame
-                     (frame-live-p frame)
-                     (frame-visible-p frame)))))))
+  (let ((buffer (get-buffer claude-posframe-buffer-name)))
+    (and buffer
+         (buffer-live-p buffer)
+         (let ((window (get-buffer-window buffer t)))
+           (and window
+                (window-live-p window)
+                (let ((frame (window-frame window)))
+                  (and frame
+                       (frame-live-p frame)
+                       (frame-visible-p frame))))))))
 
 ;;;###autoload
 (defun claude-posframe-toggle ()
   "Toggle the claude posframe visibility."
   (interactive)
   (if (claude-posframe-visible-p)
-      (claude-posframe-hide)
+    (claude-posframe-hide)
     (claude-posframe-show)))
 
 ;;;###autoload
 (defun claude-posframe-kill-buffer ()
   "Kill the claude posframe buffer."
   (interactive)
-  (when (and claude-posframe-buffer
-             (buffer-live-p claude-posframe-buffer))
-    (run-hooks 'claude-posframe-kill-hook)
-    (claude-posframe-hide)
-    (kill-buffer claude-posframe-buffer)
-    (setq claude-posframe-buffer nil)
-    (message "Claude posframe buffer killed")))
+  (let ((buffer (get-buffer claude-posframe-buffer-name)))
+    (when (and buffer (buffer-live-p buffer))
+      (run-hooks 'claude-posframe-kill-hook)
+      (claude-posframe-hide)
+      (kill-buffer buffer)
+      (message "Claude posframe buffer killed"))))
 
 ;;;###autoload
 (defun claude-posframe-restart ()
   "Restart the claude posframe by killing and recreating the buffer."
   (interactive)
   (claude-posframe-kill-buffer)
-  (claude-posframe-show))
+  (claude-posframe-show)
 
 ;; Default key bindings
 ;;;###autoload
@@ -239,14 +231,92 @@
   (global-set-key (kbd "C-c r") #'claude-posframe-restart)
   (message "Claude posframe keybindings set up"))
 
+(defun claude-posframe--get-buffer ()
+  "Get or create the claude vterm buffer using standard Elisp patterns."
+  (unless (claude-posframe--check-dependencies)
+    (user-error "Required dependencies (posframe, vterm) are not available"))
+  
+  (let ((buffer (get-buffer claude-posframe-buffer-name))
+        (current-dir (or claude-posframe-working-directory
+                        (expand-file-name "~")))
+        (calling-dir default-directory))
+    ;; Debug: Log buffer and directory state
+    (message "Claude posframe check - calling from: %s, target dir: %s, buffer: %s" 
+             calling-dir current-dir
+             (cond 
+              ((not buffer) "not found")
+              ((not (buffer-live-p buffer)) "dead")
+              ((not (with-current-buffer buffer (boundp 'vterm--process))) "no process var")
+              ((not (with-current-buffer buffer vterm--process)) "process nil")
+              ((not (with-current-buffer buffer (process-live-p vterm--process))) "process dead")
+              (t "alive")))
+    
+    ;; Check if existing buffer has live process
+    (when (and buffer
+               (buffer-live-p buffer)
+               (with-current-buffer buffer
+                 (and (boundp 'vterm--process)
+                      vterm--process
+                      (not (process-live-p vterm--process)))))
+      ;; Process is dead, kill the buffer to start fresh
+      (message "Killing dead claude posframe buffer")
+      (kill-buffer buffer)
+      (setq buffer nil))
+    
+    ;; Create buffer if it doesn't exist or was killed
+    (unless buffer
+      (message "Creating new claude posframe buffer in directory: %s" current-dir)
+      (setq buffer (generate-new-buffer claude-posframe-buffer-name))
+      (with-current-buffer buffer
+        ;; Set the working directory before initializing vterm
+        (setq default-directory current-dir)
+        (let ((vterm-shell claude-posframe-shell))
+          (condition-case err
+              (progn
+                (vterm-mode)
+                ;; Set up process sentinel for cleanup
+                (when (and (boundp 'vterm--process) vterm--process)
+                  (set-process-sentinel vterm--process #'claude-posframe--process-sentinel)))
+            (error
+             (kill-buffer buffer)
+             (signal (car err) (cdr err)))))))
+    buffer))
+
+(defun claude-posframe--process-sentinel (process event)
+  "Handle vterm process termination."
+  (when (memq (process-status process) '(exit signal))
+    (let ((buffer (process-buffer process)))
+      (when (buffer-live-p buffer)
+        ;; Hide posframe if visible
+        (when (claude-posframe-visible-p)
+          (posframe-hide buffer))
+        ;; Optionally kill buffer on process exit
+        (when (y-or-n-p "Claude process exited. Kill buffer? ")
+          (kill-buffer buffer))))))
+
+(defun claude-posframe-do-send-command (text)
+  "Send TEXT to the claude vterm buffer."
+  (let ((buffer (claude-posframe--get-buffer)))
+    (with-current-buffer buffer
+      (vterm-send-string text)
+      ;; Send newline to execute the command
+      (vterm-send-return))
+    (claude-posframe-show)))
+
+(defun claude-posframe-send-region (beg end)
+  "Send the selected region to claude posframe."
+  (interactive "r")
+  (let ((text (buffer-substring-no-properties beg end)))
+    (claude-posframe-do-send-command text)))
+
+
 ;; Cleanup function for process termination
 (defun claude-posframe--cleanup ()
   "Clean up claude posframe resources."
-  (when (and claude-posframe-buffer
-             (buffer-live-p claude-posframe-buffer))
-    (claude-posframe-hide)
-    (kill-buffer claude-posframe-buffer)
-    (setq claude-posframe-buffer nil)))
+  (let ((buffer (get-buffer claude-posframe-buffer-name)))
+    (when (and buffer (buffer-live-p buffer))
+      (claude-posframe-hide)
+      (kill-buffer buffer))))
 
 ;; Register cleanup on Emacs exit
 (add-hook 'kill-emacs-hook #'claude-posframe--cleanup)
