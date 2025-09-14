@@ -2,6 +2,12 @@ local M = {}
 
 ---
 --- :SetProxy http://localhost:9910
+
+---  or
+--- :SetEnv CLAUDE_API_KEY=your_key
+--- :SetEnv DEBUG=1
+--- :SetEnv MY_CUSTOM_VAR=value
+---
 ---
 
 function M.setup()
