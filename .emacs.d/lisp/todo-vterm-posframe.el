@@ -91,3 +91,4 @@
 
 ;; 绑定快捷键
 (global-set-key (kbd "C-,") 'my/vterm-posframe-toggle)
+(global-set-key (kbd "C-t") 'my/vterm-posframe-toggle)
