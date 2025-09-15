@@ -341,18 +341,19 @@ This checks if the current buffer already has a running claude session."
 
 (defun claude-posframe--setup-unicode-fixes ()
   "Configure Unicode character replacements for Claude Code compatibility.
-Replace problematic Unicode characters that cause line jitter with ASCII alternatives."
+Replace problematic Unicode characters that cause line jitter with ASCII alternatives.
+This fix come from: https://github.com/anthropics/claude-code/issues/247#issuecomment-3058405139"
   (let ((tbl (or buffer-display-table (setq buffer-display-table (make-display-table)))))
     (dolist (pair
-             '((#x273B . ?*) ; ✻ TEARDROP-SPOKED ASTERISK
-               (#x273D . ?*) ; ✽ HEAVY TEARDROP-SPOKED ASTERISK
-               (#x2722 . ?+) ; ✢ FOUR TEARDROP-SPOKED ASTERISK
-               (#x2736 . ?+) ; ✶ SIX-POINTED BLACK STAR
-               (#x2733 . ?*) ; ✳ EIGHT SPOKED ASTERISK
-               (#x2699 . ?*) ; ⚙ GEAR (sometimes used by Claude)
-               (#x1F4DD . ?*) ; 📝 MEMO (sometimes used by Claude)
-               (#x1F916 . ?*) ; 🤖 ROBOT FACE (sometimes used by Claude)
-               ))
+              '((#x273B . ?*) ; ✻ TEARDROP-SPOKED ASTERISK
+                 (#x273D . ?*) ; ✽ HEAVY TEARDROP-SPOKED ASTERISK
+                 (#x2722 . ?+) ; ✢ FOUR TEARDROP-SPOKED ASTERISK
+                 (#x2736 . ?+) ; ✶ SIX-POINTED BLACK STAR
+                 (#x2733 . ?*) ; ✳ EIGHT SPOKED ASTERISK
+                 (#x2699 . ?*) ; ⚙ GEAR (sometimes used by Claude)
+                 (#x1F4DD . ?*) ; 📝 MEMO (sometimes used by Claude)
+                 (#x1F916 . ?*) ; 🤖 ROBOT FACE (sometimes used by Claude)
+                 ))
       (aset tbl (car pair) (vector (cdr pair))))))
 
 (defun claude-posframe--process-sentinel (process event)
