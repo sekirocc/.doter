@@ -94,7 +94,7 @@
   "Working directory for the claude vterm process.
 If nil, use the home directory to ensure consistent behavior."
   :type '(choice (const :tag "Home directory" nil)
-                 (directory :tag "Custom directory"))
+           (directory :tag "Custom directory"))
   :group 'claude-posframe)
 
 (defconst claude-posframe-buffer-name "*claude-posframe*"
@@ -138,7 +138,8 @@ If nil, use the home directory to ensure consistent behavior."
   (let* ((buffer (claude-posframe--get-buffer))
           (dimensions (claude-posframe--calculate-dimensions))
           (width (car dimensions))
-          (height (cadr dimensions)))
+          (height (cadr dimensions))
+          (current-buffer (current-buffer)))
     (posframe-show buffer
       :buffer buffer
       :position (point)
@@ -150,6 +151,10 @@ If nil, use the home directory to ensure consistent behavior."
       :border-color claude-posframe-border-color
       :poshandler (claude-posframe--get-position-handler)
       :accept-focus t)
+    ;; Store parent buffer in frame parameter for later retrieval
+    (let ((posframe-window (get-buffer-window buffer t)))
+      (when posframe-window
+        (set-frame-parameter (window-frame posframe-window) 'posframe-parent-buffer current-buffer)))
     (when claude-posframe-auto-scroll
       (claude-posframe--ensure-scroll))
     (run-hooks 'claude-posframe-show-hook)))
@@ -158,8 +163,8 @@ If nil, use the home directory to ensure consistent behavior."
   "Ensure the claude posframe scrolls to bottom."
   (let ((buffer (get-buffer claude-posframe-buffer-name)))
     (when (and buffer
-               (buffer-live-p buffer)
-               (claude-posframe-visible-p))
+            (buffer-live-p buffer)
+            (claude-posframe-visible-p))
       (let ((windows (get-buffer-window-list buffer nil t)))
         (when windows
           (with-current-buffer buffer
@@ -178,22 +183,33 @@ If nil, use the home directory to ensure consistent behavior."
   (interactive)
   (let ((buffer (get-buffer claude-posframe-buffer-name)))
     (when (and buffer (buffer-live-p buffer))
-      (posframe-hide buffer)
-      (run-hooks 'claude-posframe-hide-hook))))
+      ;; Get parent buffer from posframe parameters
+      (let* ((posframe-window (get-buffer-window buffer t))
+             (parent-buffer (when posframe-window
+                              (frame-parameter (window-frame posframe-window) 'posframe-parent-buffer)))
+             (parent-frame (when (and parent-buffer (buffer-live-p parent-buffer))
+                             (let ((parent-window (get-buffer-window parent-buffer t)))
+                               (when parent-window
+                                 (window-frame parent-window))))))
+        (posframe-hide buffer)
+        ;; Restore focus to parent frame if found, otherwise current frame
+        (when (frame-live-p (or parent-frame (selected-frame)))
+          (select-frame-set-input-focus (or parent-frame (selected-frame))))
+        (run-hooks 'claude-posframe-hide-hook)))))
 
 
 (defun claude-posframe-visible-p ()
   "Check if the claude posframe is visible."
   (let ((buffer (get-buffer claude-posframe-buffer-name)))
     (and buffer
-         (buffer-live-p buffer)
-         (let ((window (get-buffer-window buffer t)))
-           (and window
-                (window-live-p window)
-                (let ((frame (window-frame window)))
-                  (and frame
-                       (frame-live-p frame)
-                       (frame-visible-p frame))))))))
+      (buffer-live-p buffer)
+      (let ((window (get-buffer-window buffer t)))
+        (and window
+          (window-live-p window)
+          (let ((frame (window-frame window)))
+            (and frame
+              (frame-live-p frame)
+              (frame-visible-p frame))))))))
 
 ;;;###autoload
 (defun claude-posframe-toggle ()
@@ -219,7 +235,7 @@ If nil, use the home directory to ensure consistent behavior."
   "Restart the claude posframe by killing and recreating the buffer."
   (interactive)
   (claude-posframe-kill-buffer)
-  (claude-posframe-show)
+  (claude-posframe-show))
 
 ;; Default key bindings
 ;;;###autoload
@@ -235,34 +251,34 @@ If nil, use the home directory to ensure consistent behavior."
   "Get or create the claude vterm buffer using standard Elisp patterns."
   (unless (claude-posframe--check-dependencies)
     (user-error "Required dependencies (posframe, vterm) are not available"))
-  
+
   (let ((buffer (get-buffer claude-posframe-buffer-name))
-        (current-dir (or claude-posframe-working-directory
+         (current-dir (or claude-posframe-working-directory
                         (expand-file-name "~")))
-        (calling-dir default-directory))
+         (calling-dir default-directory))
     ;; Debug: Log buffer and directory state
-    (message "Claude posframe check - calling from: %s, target dir: %s, buffer: %s" 
-             calling-dir current-dir
-             (cond 
-              ((not buffer) "not found")
-              ((not (buffer-live-p buffer)) "dead")
-              ((not (with-current-buffer buffer (boundp 'vterm--process))) "no process var")
-              ((not (with-current-buffer buffer vterm--process)) "process nil")
-              ((not (with-current-buffer buffer (process-live-p vterm--process))) "process dead")
-              (t "alive")))
-    
+    (message "Claude posframe check - calling from: %s, target dir: %s, buffer: %s"
+      calling-dir current-dir
+      (cond
+        ((not buffer) "not found")
+        ((not (buffer-live-p buffer)) "dead")
+        ((not (with-current-buffer buffer (boundp 'vterm--process))) "no process var")
+        ((not (with-current-buffer buffer vterm--process)) "process nil")
+        ((not (with-current-buffer buffer (process-live-p vterm--process))) "process dead")
+        (t "alive")))
+
     ;; Check if existing buffer has live process
     (when (and buffer
-               (buffer-live-p buffer)
-               (with-current-buffer buffer
-                 (and (boundp 'vterm--process)
-                      vterm--process
-                      (not (process-live-p vterm--process)))))
+            (buffer-live-p buffer)
+            (with-current-buffer buffer
+              (and (boundp 'vterm--process)
+                vterm--process
+                (not (process-live-p vterm--process)))))
       ;; Process is dead, kill the buffer to start fresh
       (message "Killing dead claude posframe buffer")
       (kill-buffer buffer)
       (setq buffer nil))
-    
+
     ;; Create buffer if it doesn't exist or was killed
     (unless buffer
       (message "Creating new claude posframe buffer in directory: %s" current-dir)
@@ -272,14 +288,14 @@ If nil, use the home directory to ensure consistent behavior."
         (setq default-directory current-dir)
         (let ((vterm-shell claude-posframe-shell))
           (condition-case err
-              (progn
-                (vterm-mode)
-                ;; Set up process sentinel for cleanup
-                (when (and (boundp 'vterm--process) vterm--process)
-                  (set-process-sentinel vterm--process #'claude-posframe--process-sentinel)))
+            (progn
+              (vterm-mode)
+              ;; Set up process sentinel for cleanup
+              (when (and (boundp 'vterm--process) vterm--process)
+                (set-process-sentinel vterm--process #'claude-posframe--process-sentinel)))
             (error
-             (kill-buffer buffer)
-             (signal (car err) (cdr err)))))))
+              (kill-buffer buffer)
+              (signal (car err) (cdr err)))))))
     buffer))
 
 (defun claude-posframe--process-sentinel (process event)
