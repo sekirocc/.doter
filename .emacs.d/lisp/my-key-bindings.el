@@ -60,7 +60,7 @@
 (bind-key* (kbd "s-w") #'kill-current-buffer)
 (bind-key* (kbd "s-t") #'+funcs/new-empty-buffer)
 
-(bind-key* (kbd "C-T") #'multi-vterm)
+(bind-key* (kbd "s-T") #'multi-vterm)
 (bind-key* (kbd "C-t") #'claude-posframe-toggle)
 
 (bind-key* (kbd "s-<backspace>") #'my-delete-to-bol)
