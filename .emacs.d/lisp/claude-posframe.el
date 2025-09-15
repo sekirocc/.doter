@@ -56,7 +56,7 @@
   :type 'integer
   :group 'claude-posframe)
 
-(defcustom claude-posframe-border-color "green"
+(defcustom claude-posframe-border-color "gray"
   "Border color of the posframe."
   :type 'string
   :group 'claude-posframe)
@@ -331,9 +331,8 @@ This checks if the current buffer already has a running claude session."
   (when (memq (process-status process) '(exit signal))
     (let ((buffer (process-buffer process)))
       (when (buffer-live-p buffer)
-        ;; Hide posframe if visible
-        (when (claude-posframe-visible-p)
-          (posframe-hide buffer))
+        ;; Hide posframe if this buffer is being displayed
+        (posframe-hide buffer)
         ;; Notify user but don't block with interactive prompt in sentinel
         (message "Claude process exited in buffer %s" (buffer-name buffer))
         ;; Auto-kill buffer after a delay to avoid blocking
