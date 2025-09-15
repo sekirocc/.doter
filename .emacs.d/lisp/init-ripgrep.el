@@ -22,7 +22,7 @@
     ("C-c g" . rg)
     )
   :config
-  (setq rg-command-line-flags '("--context" "2" "--field-context-separator" "."))
+  (setq rg-command-line-flags '("--context" "2"))
   )
 
 

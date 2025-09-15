@@ -88,6 +88,7 @@
          my-select-to-eol
          my-set-mark-command-or-deactivate-mark
          my-toggle-case-char
+         my-toggle-er/mark-outside-paren
          my-wrap-region-with-double-quotes
          my-wrap-region-with-parens
          my-yank-but-check-newline

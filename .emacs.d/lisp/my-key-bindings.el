@@ -305,6 +305,9 @@
     (define-key god-local-mode-map (kbd "SPC I") #'my-imenu-list-smart-toggle-refresh)
 
 
+    (define-key god-local-mode-map (kbd "SPC a s") #'claude-posframe-send-region)
+    (define-key god-local-mode-map (kbd "SPC a b") #'claude-posframe-send-buffer-file)
+
     (define-key god-local-mode-map (kbd "@") #'my-treemacs-add-and-display-current-project)
     (define-key god-local-mode-map (kbd "SPC @") #'treemacs-add-and-display-current-project)
 
