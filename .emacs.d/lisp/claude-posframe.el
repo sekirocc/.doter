@@ -98,6 +98,13 @@ Falls back to current directory if no project is detected."
            (directory :tag "Custom directory"))
   :group 'claude-posframe)
 
+(defcustom claude-posframe-fix-unicode t
+  "Whether to apply Unicode character fixes to prevent line jitter.
+Claude Code uses many special Unicode characters that can cause display issues
+if your font doesn't support them. This setting helps mitigate the problem."
+  :type 'boolean
+  :group 'claude-posframe)
+
 (defconst claude-posframe-buffer-base-name "*claude-posframe*"
   "Base name of the claude posframe buffer.")
 
@@ -318,6 +325,12 @@ This checks if the current buffer already has a running claude session."
           (condition-case err
             (progn
               (vterm-mode)
+              ;; Configure vterm for better Unicode support
+              (when claude-posframe-fix-unicode
+                (setq-local vterm-max-scrollback 5000)
+                (setq-local vterm-buffer-name-string nil)
+                ;; Replace problematic Unicode characters with ASCII alternatives
+                (claude-posframe--setup-unicode-fixes))
               ;; Set up process sentinel for cleanup
               (when (and (boundp 'vterm--process) vterm--process)
                 (set-process-sentinel vterm--process #'claude-posframe--process-sentinel)))
@@ -325,6 +338,22 @@ This checks if the current buffer already has a running claude session."
               (kill-buffer buffer)
               (signal (car err) (cdr err)))))))
     buffer))
+
+(defun claude-posframe--setup-unicode-fixes ()
+  "Configure Unicode character replacements for Claude Code compatibility.
+Replace problematic Unicode characters that cause line jitter with ASCII alternatives."
+  (let ((tbl (or buffer-display-table (setq buffer-display-table (make-display-table)))))
+    (dolist (pair
+             '((#x273B . ?*) ; ✻ TEARDROP-SPOKED ASTERISK
+               (#x273D . ?*) ; ✽ HEAVY TEARDROP-SPOKED ASTERISK
+               (#x2722 . ?+) ; ✢ FOUR TEARDROP-SPOKED ASTERISK
+               (#x2736 . ?+) ; ✶ SIX-POINTED BLACK STAR
+               (#x2733 . ?*) ; ✳ EIGHT SPOKED ASTERISK
+               (#x2699 . ?*) ; ⚙ GEAR (sometimes used by Claude)
+               (#x1F4DD . ?*) ; 📝 MEMO (sometimes used by Claude)
+               (#x1F916 . ?*) ; 🤖 ROBOT FACE (sometimes used by Claude)
+               ))
+      (aset tbl (car pair) (vector (cdr pair))))))
 
 (defun claude-posframe--process-sentinel (process event)
   "Handle vterm process termination."
