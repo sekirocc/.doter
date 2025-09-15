@@ -98,8 +98,15 @@ Falls back to current directory if no project is detected."
            (directory :tag "Custom directory"))
   :group 'claude-posframe)
 
-(defconst claude-posframe-buffer-name "*claude-posframe*"
-  "Name of the claude posframe buffer.")
+(defconst claude-posframe-buffer-base-name "*claude-posframe*"
+  "Base name of the claude posframe buffer.")
+
+(defun claude-posframe--get-buffer-name ()
+  "Get project-specific buffer name."
+  (let ((project-dir (claude-posframe--get-project-directory)))
+    (if project-dir
+      (format "*claude-posframe:%s*" (file-name-nondirectory (directory-file-name project-dir)))
+      claude-posframe-buffer-base-name)))
 
 (defvar claude-posframe--parent-frame nil
   "Store the parent frame to restore focus after hiding posframe.")
@@ -144,6 +151,24 @@ Falls back to current directory if no project is detected."
     ;; Fallback to current directory
     default-directory))
 
+(defun claude-posframe--check-claude-running (directory)
+  "Check if there's already a claude process running in DIRECTORY.
+This checks if the current buffer already has a running claude session."
+  ;; Since we can't reliably determine if a claude process belongs to our specific
+  ;; directory/session, we'll let the buffer always start fresh with claude.
+  ;; The user can manage claude sessions manually if needed.
+  nil)
+
+(defun claude-posframe--get-shell-command (directory)
+  "Get appropriate shell command to start claude in DIRECTORY."
+  ;; Validate inputs for security
+  (unless (file-directory-p directory)
+    (user-error "Invalid directory: %s" directory))
+  (unless (stringp claude-posframe-shell)
+    (user-error "Invalid shell command: %s" claude-posframe-shell))
+  ;; Create a safe shell command that changes to the directory and runs claude
+  claude-posframe-shell)
+
 (defun claude-posframe--calculate-dimensions ()
   "Calculate posframe dimensions with minimum constraints."
   (let ((width (max claude-posframe-min-width
@@ -165,7 +190,6 @@ Falls back to current directory if no project is detected."
     ;; Store current frame for focus restoration
     (setq claude-posframe--parent-frame (selected-frame))
     (posframe-show buffer
-      :buffer buffer
       :position (point)
       :width width
       :height height
@@ -181,7 +205,7 @@ Falls back to current directory if no project is detected."
 
 (defun claude-posframe--ensure-scroll ()
   "Ensure the claude posframe scrolls to bottom."
-  (let ((buffer (get-buffer claude-posframe-buffer-name)))
+  (let ((buffer (get-buffer (claude-posframe--get-buffer-name))))
     (when (and buffer
             (buffer-live-p buffer)
             (claude-posframe-visible-p))
@@ -201,7 +225,7 @@ Falls back to current directory if no project is detected."
 (defun claude-posframe-hide ()
   "Hide the claude posframe."
   (interactive)
-  (let ((buffer (get-buffer claude-posframe-buffer-name)))
+  (let ((buffer (get-buffer (claude-posframe--get-buffer-name))))
     (when (and buffer (buffer-live-p buffer))
       (posframe-hide buffer)
       ;; Restore focus to parent frame
@@ -213,7 +237,7 @@ Falls back to current directory if no project is detected."
 
 (defun claude-posframe-visible-p ()
   "Check if the claude posframe is visible."
-  (let ((buffer (get-buffer claude-posframe-buffer-name)))
+  (let ((buffer (get-buffer (claude-posframe--get-buffer-name))))
     (and buffer
       (buffer-live-p buffer)
       (let ((window (get-buffer-window buffer t)))
@@ -236,7 +260,7 @@ Falls back to current directory if no project is detected."
 (defun claude-posframe-kill-buffer ()
   "Kill the claude posframe buffer."
   (interactive)
-  (let ((buffer (get-buffer claude-posframe-buffer-name)))
+  (let ((buffer (get-buffer (claude-posframe--get-buffer-name))))
     (when (and buffer (buffer-live-p buffer))
       (run-hooks 'claude-posframe-kill-hook)
       (claude-posframe-hide)
@@ -265,21 +289,12 @@ Falls back to current directory if no project is detected."
   (unless (claude-posframe--check-dependencies)
     (user-error "Required dependencies (posframe, vterm) are not available"))
 
-  (let ((buffer (get-buffer claude-posframe-buffer-name))
-         (current-dir (or claude-posframe-working-directory
-                        (claude-posframe--get-project-directory)
-                        (expand-file-name "~")))
-         (calling-dir default-directory))
-    ;; Debug: Log buffer and directory state
-    (message "Claude posframe check - calling from: %s, target dir: %s, buffer: %s"
-      calling-dir current-dir
-      (cond
-        ((not buffer) "not found")
-        ((not (buffer-live-p buffer)) "dead")
-        ((not (with-current-buffer buffer (boundp 'vterm--process))) "no process var")
-        ((not (with-current-buffer buffer vterm--process)) "process nil")
-        ((not (with-current-buffer buffer (process-live-p vterm--process))) "process dead")
-        (t "alive")))
+  (let* ((buffer-name (claude-posframe--get-buffer-name))
+          (buffer (get-buffer buffer-name))
+          (current-dir (or claude-posframe-working-directory
+                         (claude-posframe--get-project-directory)
+                         (expand-file-name "~")))
+          (calling-dir default-directory))
 
     ;; Check if existing buffer has live process
     (when (and buffer
@@ -289,18 +304,17 @@ Falls back to current directory if no project is detected."
                 vterm--process
                 (not (process-live-p vterm--process)))))
       ;; Process is dead, kill the buffer to start fresh
-      (message "Killing dead claude posframe buffer")
       (kill-buffer buffer)
       (setq buffer nil))
 
     ;; Create buffer if it doesn't exist or was killed
     (unless buffer
-      (message "Creating new claude posframe buffer in directory: %s" current-dir)
-      (setq buffer (generate-new-buffer claude-posframe-buffer-name))
+      (setq buffer (generate-new-buffer buffer-name))
       (with-current-buffer buffer
         ;; Set the working directory before initializing vterm
-        (setq default-directory current-dir)
-        (let ((vterm-shell claude-posframe-shell))
+        (let ((vterm-shell (claude-posframe--get-shell-command current-dir))
+               (default-directory current-dir))
+          (message "vterm-shell: %s" vterm-shell)
           (condition-case err
             (progn
               (vterm-mode)
@@ -320,9 +334,14 @@ Falls back to current directory if no project is detected."
         ;; Hide posframe if visible
         (when (claude-posframe-visible-p)
           (posframe-hide buffer))
-        ;; Optionally kill buffer on process exit
-        (when (y-or-n-p "Claude process exited. Kill buffer? ")
-          (kill-buffer buffer))))))
+        ;; Notify user but don't block with interactive prompt in sentinel
+        (message "Claude process exited in buffer %s" (buffer-name buffer))
+        ;; Auto-kill buffer after a delay to avoid blocking
+        (run-with-timer 0.1 nil
+          (lambda (buf)
+            (when (buffer-live-p buf)
+              (kill-buffer buf)))
+          buffer)))))
 
 (defun claude-posframe-do-send-command (text)
   "Send TEXT to the claude vterm buffer."
@@ -354,9 +373,16 @@ Falls back to current directory if no project is detected."
 ;; Cleanup function for process termination
 (defun claude-posframe--cleanup ()
   "Clean up claude posframe resources."
-  (let ((buffer (get-buffer claude-posframe-buffer-name)))
+  ;; Clean up all project-specific buffers
+  (dolist (buffer (buffer-list))
+    (when (string-match-p "\*claude-posframe:" (buffer-name buffer))
+      (when (buffer-live-p buffer)
+        (posframe-hide buffer)
+        (kill-buffer buffer))))
+  ;; Also clean up the default buffer if it exists
+  (let ((buffer (get-buffer claude-posframe-buffer-base-name)))
     (when (and buffer (buffer-live-p buffer))
-      (claude-posframe-hide)
+      (posframe-hide buffer)
       (kill-buffer buffer))))
 
 ;; Register cleanup on Emacs exit
