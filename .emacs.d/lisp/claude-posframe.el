@@ -92,13 +92,17 @@
 
 (defcustom claude-posframe-working-directory nil
   "Working directory for the claude vterm process.
-If nil, use the home directory to ensure consistent behavior."
-  :type '(choice (const :tag "Home directory" nil)
+If nil, automatically detect project directory using projectile, project.el, or vc.
+Falls back to current directory if no project is detected."
+  :type '(choice (const :tag "Auto-detect project directory" nil)
            (directory :tag "Custom directory"))
   :group 'claude-posframe)
 
 (defconst claude-posframe-buffer-name "*claude-posframe*"
   "Name of the claude posframe buffer.")
+
+(defvar claude-posframe--parent-frame nil
+  "Store the parent frame to restore focus after hiding posframe.")
 
 ;; Hooks
 (defvar claude-posframe-show-hook nil
@@ -121,6 +125,25 @@ If nil, use the home directory to ensure consistent behavior."
     ('right #'posframe-poshandler-frame-right-center)
     (_ #'posframe-poshandler-frame-center)))
 
+(defun claude-posframe--get-project-directory ()
+  "Get the project root directory, trying multiple methods."
+  (or
+    ;; Try projectile if available
+    (when (and (bound-and-true-p projectile-mode)
+            (fboundp 'projectile-project-root))
+      (ignore-errors (projectile-project-root)))
+    ;; Try project.el if available (Emacs 25+)
+    (when (fboundp 'project-current)
+      (when-let ((project (project-current)))
+        (if (fboundp 'project-root)
+          (project-root project)
+          (car (project-roots project)))))
+    ;; Try vc as fallback
+    (when (fboundp 'vc-root-dir)
+      (ignore-errors (vc-root-dir)))
+    ;; Fallback to current directory
+    default-directory))
+
 (defun claude-posframe--calculate-dimensions ()
   "Calculate posframe dimensions with minimum constraints."
   (let ((width (max claude-posframe-min-width
@@ -138,8 +161,9 @@ If nil, use the home directory to ensure consistent behavior."
   (let* ((buffer (claude-posframe--get-buffer))
           (dimensions (claude-posframe--calculate-dimensions))
           (width (car dimensions))
-          (height (cadr dimensions))
-          (current-buffer (current-buffer)))
+          (height (cadr dimensions)))
+    ;; Store current frame for focus restoration
+    (setq claude-posframe--parent-frame (selected-frame))
     (posframe-show buffer
       :buffer buffer
       :position (point)
@@ -151,10 +175,6 @@ If nil, use the home directory to ensure consistent behavior."
       :border-color claude-posframe-border-color
       :poshandler (claude-posframe--get-position-handler)
       :accept-focus t)
-    ;; Store parent buffer in frame parameter for later retrieval
-    (let ((posframe-window (get-buffer-window buffer t)))
-      (when posframe-window
-        (set-frame-parameter (window-frame posframe-window) 'posframe-parent-buffer current-buffer)))
     (when claude-posframe-auto-scroll
       (claude-posframe--ensure-scroll))
     (run-hooks 'claude-posframe-show-hook)))
@@ -183,19 +203,12 @@ If nil, use the home directory to ensure consistent behavior."
   (interactive)
   (let ((buffer (get-buffer claude-posframe-buffer-name)))
     (when (and buffer (buffer-live-p buffer))
-      ;; Get parent buffer from posframe parameters
-      (let* ((posframe-window (get-buffer-window buffer t))
-             (parent-buffer (when posframe-window
-                              (frame-parameter (window-frame posframe-window) 'posframe-parent-buffer)))
-             (parent-frame (when (and parent-buffer (buffer-live-p parent-buffer))
-                             (let ((parent-window (get-buffer-window parent-buffer t)))
-                               (when parent-window
-                                 (window-frame parent-window))))))
-        (posframe-hide buffer)
-        ;; Restore focus to parent frame if found, otherwise current frame
-        (when (frame-live-p (or parent-frame (selected-frame)))
-          (select-frame-set-input-focus (or parent-frame (selected-frame))))
-        (run-hooks 'claude-posframe-hide-hook)))))
+      (posframe-hide buffer)
+      ;; Restore focus to parent frame
+      (when (and claude-posframe--parent-frame
+              (frame-live-p claude-posframe--parent-frame))
+        (select-frame-set-input-focus claude-posframe--parent-frame))
+      (run-hooks 'claude-posframe-hide-hook))))
 
 
 (defun claude-posframe-visible-p ()
@@ -254,6 +267,7 @@ If nil, use the home directory to ensure consistent behavior."
 
   (let ((buffer (get-buffer claude-posframe-buffer-name))
          (current-dir (or claude-posframe-working-directory
+                        (claude-posframe--get-project-directory)
                         (expand-file-name "~")))
          (calling-dir default-directory))
     ;; Debug: Log buffer and directory state
@@ -316,13 +330,24 @@ If nil, use the home directory to ensure consistent behavior."
     (with-current-buffer buffer
       (vterm-send-string text)
       ;; Send newline to execute the command
-      (vterm-send-return))
+      ;; (vterm-send-return)
+      )
     (claude-posframe-show)))
 
 (defun claude-posframe-send-region (beg end)
   "Send the selected region to claude posframe."
   (interactive "r")
-  (let ((text (buffer-substring-no-properties beg end)))
+  (let ((selection (buffer-substring-no-properties beg end)))
+    (claude-posframe-do-send-command (format "%s\n" selection))))
+
+
+(defun claude-posframe--get-buffer-file-name()
+  (when buffer-file-name
+    (file-local-name (file-truename buffer-file-name))))
+
+(defun claude-posframe-send-buffer-file()
+  (interactive)
+  (let ((text (format "@%s " (claude-posframe--get-buffer-file-name))))
     (claude-posframe-do-send-command text)))
 
 
