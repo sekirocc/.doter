@@ -2,7 +2,7 @@
 
 ;; Copyright (C) 2025
 
-;; Author: Your Name
+;; Author: Claude & User
 ;; Version: 1.1.0
 ;; Package-Requires: ((emacs "26.1") (posframe "1.0.0") (vterm "0.0.1"))
 ;; Keywords: convenience, terminal, claude
@@ -13,11 +13,27 @@
 ;; This package provides a posframe-based terminal interface for Claude.
 ;; It creates a floating terminal window that can be toggled on/off.
 ;; The package includes customizable dimensions, colors, and behavior.
+;;
+;; Usage:
+;;   (require 'claude-posframe)
+;;   (claude-posframe-mode 1)  ; Enable in current buffer
+;;   ;; or
+;;   (global-claude-posframe-mode 1)  ; Enable globally
+;;
+;; Key bindings (when claude-posframe-mode is active):
+;;   C-c a t - Toggle Claude posframe
+;;   C-,     - Toggle Claude posframe (quick alternative)
+;;   C-c a k - Kill Claude posframe buffer
+;;   C-c a r - Restart Claude posframe
+;;   C-c a b - Send current buffer file to Claude
+;;   C-c a s - Send selected region to Claude
 
 ;;; Code:
 
 (eval-when-compile
   (require 'cl-lib))
+
+;;; Dependencies and Declarations
 
 (declare-function posframe-show "posframe")
 (declare-function posframe-hide "posframe")
@@ -35,6 +51,8 @@
       (and (require 'posframe nil t)
         (require 'vterm nil t))))
   claude-posframe--dependencies-available)
+
+;;; Customization
 
 (defgroup claude-posframe nil
   "Claude posframe configuration."
@@ -56,7 +74,7 @@
   :type 'integer
   :group 'claude-posframe)
 
-(defcustom claude-posframe-border-color "gray"
+(defcustom claude-posframe-border-color "green"
   "Border color of the posframe."
   :type 'string
   :group 'claude-posframe)
@@ -108,6 +126,13 @@ if your font doesn't support them. This setting helps mitigate the problem."
 (defconst claude-posframe-buffer-base-name "*claude-posframe*"
   "Base name of the claude posframe buffer.")
 
+;;; Variables and State
+
+(defvar claude-posframe--parent-frame nil
+  "Store the parent frame to restore focus after hiding posframe.")
+
+;;; Utility Functions
+
 (defun claude-posframe--get-buffer-name ()
   "Get project-specific buffer name."
   (let ((project-dir (claude-posframe--get-project-directory)))
@@ -115,10 +140,7 @@ if your font doesn't support them. This setting helps mitigate the problem."
       (format "*claude-posframe:%s*" (file-name-nondirectory (directory-file-name project-dir)))
       claude-posframe-buffer-base-name)))
 
-(defvar claude-posframe--parent-frame nil
-  "Store the parent frame to restore focus after hiding posframe.")
-
-;; Hooks
+;;; Hooks
 (defvar claude-posframe-show-hook nil
   "Hook run after showing the claude posframe.")
 
@@ -158,23 +180,7 @@ if your font doesn't support them. This setting helps mitigate the problem."
     ;; Fallback to current directory
     default-directory))
 
-(defun claude-posframe--check-claude-running (directory)
-  "Check if there's already a claude process running in DIRECTORY.
-This checks if the current buffer already has a running claude session."
-  ;; Since we can't reliably determine if a claude process belongs to our specific
-  ;; directory/session, we'll let the buffer always start fresh with claude.
-  ;; The user can manage claude sessions manually if needed.
-  nil)
-
-(defun claude-posframe--get-shell-command (directory)
-  "Get appropriate shell command to start claude in DIRECTORY."
-  ;; Validate inputs for security
-  (unless (file-directory-p directory)
-    (user-error "Invalid directory: %s" directory))
-  (unless (stringp claude-posframe-shell)
-    (user-error "Invalid shell command: %s" claude-posframe-shell))
-  ;; Create a safe shell command that changes to the directory and runs claude
-  claude-posframe-shell)
+;;; Core Functions
 
 (defun claude-posframe--calculate-dimensions ()
   "Calculate posframe dimensions with minimum constraints."
@@ -210,8 +216,11 @@ This checks if the current buffer already has a running claude session."
       (claude-posframe--ensure-scroll))
     (run-hooks 'claude-posframe-show-hook)))
 
+;;; Display and Interaction Functions
+
 (defun claude-posframe--ensure-scroll ()
-  "Ensure the claude posframe scrolls to bottom."
+  "Ensure the claude posframe scrolls to bottom.
+If vterm is in copy mode, exit to insert mode."
   (let ((buffer (get-buffer (claude-posframe--get-buffer-name))))
     (when (and buffer
             (buffer-live-p buffer)
@@ -219,6 +228,10 @@ This checks if the current buffer already has a running claude session."
       (let ((windows (get-buffer-window-list buffer nil t)))
         (when windows
           (with-current-buffer buffer
+            ;; Exit vterm copy mode if active
+            (when (and (bound-and-true-p vterm-copy-mode)
+                    vterm-copy-mode)
+              (vterm-copy-mode -1))
             (goto-char (point-max)))
           (dolist (win windows)
             (when (window-live-p win)
@@ -281,15 +294,46 @@ This checks if the current buffer already has a running claude session."
   (claude-posframe-kill-buffer)
   (claude-posframe-show))
 
-;; Default key bindings
+;;; Minor Mode Definition
+(defvar claude-posframe-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "C-c a t") #'claude-posframe-toggle)
+    (define-key map (kbd "C-,") #'claude-posframe-toggle)
+    (define-key map (kbd "C-c a k") #'claude-posframe-kill-buffer)
+    (define-key map (kbd "C-c a r") #'claude-posframe-restart)
+    (define-key map (kbd "C-c a b") #'claude-posframe-send-buffer-file)
+    (define-key map (kbd "C-c a s") #'claude-posframe-send-region)
+    map)
+  "Keymap for `claude-posframe-mode'.")
+
+;;;###autoload
+(define-minor-mode claude-posframe-mode
+  "Minor mode for Claude posframe integration.
+Provides convenient keybindings for interacting with Claude in a posframe."
+  :init-value nil
+  :lighter " Claude"
+  :keymap claude-posframe-mode-map
+  :group 'claude-posframe
+  (if claude-posframe-mode
+    (message "Claude posframe mode enabled")
+    (message "Claude posframe mode disabled")))
+
+;;;###autoload
+(define-globalized-minor-mode global-claude-posframe-mode
+  claude-posframe-mode
+  (lambda () (claude-posframe-mode 1))
+  :group 'claude-posframe)
+
+;; Legacy function for backward compatibility
 ;;;###autoload
 (defun claude-posframe-setup-keybindings ()
-  "Set up default keybindings for claude-posframe."
+  "Set up default keybindings for claude-posframe.
+This function is deprecated. Use `claude-posframe-mode' instead."
   (interactive)
-  (global-set-key (kbd "C-c t") #'claude-posframe-toggle)
-  (global-set-key (kbd "C-c T") #'claude-posframe-kill-buffer)
-  (global-set-key (kbd "C-c r") #'claude-posframe-restart)
-  (message "Claude posframe keybindings set up"))
+  (claude-posframe-mode 1)
+  (message "Claude posframe keybindings set up (consider using claude-posframe-mode instead)"))
+
+;;; Buffer Management
 
 (defun claude-posframe--get-buffer ()
   "Get or create the claude vterm buffer using standard Elisp patterns."
@@ -319,9 +363,8 @@ This checks if the current buffer already has a running claude session."
       (setq buffer (generate-new-buffer buffer-name))
       (with-current-buffer buffer
         ;; Set the working directory before initializing vterm
-        (let ((vterm-shell (claude-posframe--get-shell-command current-dir))
+        (let ((vterm-shell claude-posframe-shell)
                (default-directory current-dir))
-          (message "vterm-shell: %s" vterm-shell)
           (condition-case err
             (progn
               (vterm-mode)
@@ -331,6 +374,8 @@ This checks if the current buffer already has a running claude session."
                 (setq-local vterm-buffer-name-string nil)
                 ;; Replace problematic Unicode characters with ASCII alternatives
                 (claude-posframe--setup-unicode-fixes))
+              ;; Set up Claude Code specific key bindings
+              (claude-posframe--setup-vterm-keybindings)
               ;; Set up process sentinel for cleanup
               (when (and (boundp 'vterm--process) vterm--process)
                 (set-process-sentinel vterm--process #'claude-posframe--process-sentinel)))
@@ -353,8 +398,28 @@ This fix come from: https://github.com/anthropics/claude-code/issues/247#issueco
                  (#x2699 . ?*) ; ⚙ GEAR (sometimes used by Claude)
                  (#x1F4DD . ?*) ; 📝 MEMO (sometimes used by Claude)
                  (#x1F916 . ?*) ; 🤖 ROBOT FACE (sometimes used by Claude)
+                 (#x00A0 . ? ) ; NO-BREAK SPACE -> regular space
                  ))
       (aset tbl (car pair) (vector (cdr pair))))))
+
+;;; vterm Integration
+
+(defun claude-posframe--vterm-send-return ()
+  "Send return key to vterm."
+  (interactive)
+  (vterm-send-key ""))
+
+(defun claude-posframe--vterm-send-alt-return ()
+  "Send Alt+Return to vterm."
+  (interactive)
+  (vterm-send-key "" nil t))
+
+(defun claude-posframe--setup-vterm-keybindings ()
+  "Set up Claude Code specific key bindings in vterm buffer."
+  (let ((map (current-local-map)))
+    (when map
+      (define-key map (kbd "<return>") #'claude-posframe--vterm-send-return)
+      (define-key map (kbd "<M-return>") #'claude-posframe--vterm-send-alt-return))))
 
 (defun claude-posframe--process-sentinel (process event)
   "Handle vterm process termination."
@@ -372,14 +437,13 @@ This fix come from: https://github.com/anthropics/claude-code/issues/247#issueco
               (kill-buffer buf)))
           buffer)))))
 
+;;; Send Commands to Claude
+
 (defun claude-posframe-do-send-command (text)
   "Send TEXT to the claude vterm buffer."
   (let ((buffer (claude-posframe--get-buffer)))
     (with-current-buffer buffer
-      (vterm-send-string text)
-      ;; Send newline to execute the command
-      ;; (vterm-send-return)
-      )
+      (vterm-send-string text))
     (claude-posframe-show)))
 
 (defun claude-posframe-send-region (beg end)
@@ -389,17 +453,20 @@ This fix come from: https://github.com/anthropics/claude-code/issues/247#issueco
     (claude-posframe-do-send-command (format "%s\n" selection))))
 
 
-(defun claude-posframe--get-buffer-file-name()
+(defun claude-posframe--get-buffer-file-name ()
+  "Get the current buffer's file name."
   (when buffer-file-name
     (file-local-name (file-truename buffer-file-name))))
 
-(defun claude-posframe-send-buffer-file()
+(defun claude-posframe-send-buffer-file ()
+  "Send the current buffer's file to Claude."
   (interactive)
-  (let ((text (format "@%s " (claude-posframe--get-buffer-file-name))))
-    (claude-posframe-do-send-command text)))
+  (let ((filename (claude-posframe--get-buffer-file-name)))
+    (if filename
+      (claude-posframe-do-send-command (format "@%s " filename))
+      (message "Current buffer is not visiting a file"))))
 
-
-;; Cleanup function for process termination
+;;; Cleanup and Initialization
 (defun claude-posframe--cleanup ()
   "Clean up claude posframe resources."
   ;; Clean up all project-specific buffers
@@ -416,6 +483,16 @@ This fix come from: https://github.com/anthropics/claude-code/issues/247#issueco
 
 ;; Register cleanup on Emacs exit
 (add-hook 'kill-emacs-hook #'claude-posframe--cleanup)
+
+;; Auto-enable mode for programming modes (optional)
+;;;###autoload
+(defun claude-posframe-auto-enable ()
+  "Automatically enable claude-posframe-mode for programming modes."
+  (when (derived-mode-p 'prog-mode 'text-mode)
+    (claude-posframe-mode 1)))
+
+;; Uncomment the following line to auto-enable for programming modes:
+;; (add-hook 'after-change-major-mode-hook #'claude-posframe-auto-enable)
 
 (provide 'claude-posframe)
 ;;; claude-posframe.el ends here
