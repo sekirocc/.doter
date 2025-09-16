@@ -123,6 +123,29 @@ if your font doesn't support them. This setting helps mitigate the problem."
   :type 'boolean
   :group 'claude-posframe)
 
+(defcustom claude-posframe-buffer-multiline-output t
+  "Whether to buffer vterm output to prevent flickering on multi-line input.
+
+When non-nil, vterm output that appears to be redrawing multi-line
+input boxes will be buffered briefly and processed in a single
+batch. This prevents the flickering that can occur when Claude redraws
+its input box as it expands to multiple lines."
+  :type 'boolean
+  :group 'claude-posframe)
+
+(defcustom claude-posframe-multiline-delay 0.01
+  "Delay in seconds before processing buffered vterm output.
+
+This controls how long vterm waits to collect output before processing
+it when `claude-posframe-buffer-multiline-output' is enabled.
+The delay should be long enough to collect bursts of updates but short
+enough to not be noticeable to the user.
+
+The default value of 0.01 seconds (10ms) provides a good balance
+between reducing flickering and maintaining responsiveness."
+  :type 'number
+  :group 'claude-posframe)
+
 (defconst claude-posframe-buffer-base-name "*claude-posframe*"
   "Base name of the claude posframe buffer.")
 
@@ -130,6 +153,12 @@ if your font doesn't support them. This setting helps mitigate the problem."
 
 (defvar claude-posframe--parent-frame nil
   "Store the parent frame to restore focus after hiding posframe.")
+
+(defvar-local claude-posframe--multiline-buffer nil
+  "Buffer for accumulating multi-line vterm output.")
+
+(defvar-local claude-posframe--multiline-buffer-timer nil
+  "Timer for processing buffered multi-line vterm output.")
 
 ;;; Utility Functions
 
@@ -376,6 +405,8 @@ This function is deprecated. Use `claude-posframe-mode' instead."
                 (claude-posframe--setup-unicode-fixes))
               ;; Set up Claude Code specific key bindings
               (claude-posframe--setup-vterm-keybindings)
+              ;; Set up multi-line buffering to prevent flickering
+              (advice-add 'vterm--filter :around #'claude-posframe--multiline-buffer-filter)
               ;; Set up process sentinel for cleanup
               (when (and (boundp 'vterm--process) vterm--process)
                 (set-process-sentinel vterm--process #'claude-posframe--process-sentinel)))
@@ -437,6 +468,63 @@ This fix come from: https://github.com/anthropics/claude-code/issues/247#issueco
               (kill-buffer buf)))
           buffer)))))
 
+(defun claude-posframe--multiline-buffer-filter (orig-fun process input)
+  "Buffer vterm output when it appears to be redrawing multi-line input.
+This prevents flickering when Claude redraws its input box as it expands
+to multiple lines. We detect this by looking for escape sequences that
+indicate cursor positioning and line clearing operations.
+
+ORIG-FUN is the original vterm--filter function.
+PROCESS is the vterm process.
+INPUT is the terminal output string."
+  (if (or (not claude-posframe-buffer-multiline-output)
+          (not (string-match-p "\\*claude-posframe" (buffer-name (process-buffer process)))))
+      ;; Feature disabled or not a Claude posframe buffer, pass through normally
+      (funcall orig-fun process input)
+    (with-current-buffer (process-buffer process)
+      ;; Check if this looks like multi-line input box redraw
+      ;; Common patterns when redrawing multi-line input:
+      ;; - ESC[K (clear to end of line)
+      ;; - ESC[<n>;<m>H (cursor positioning)
+      ;; - ESC[<n>A/B/C/D (cursor movement)
+      ;; - Multiple of these in sequence
+      (let ((has-clear-line (string-match-p "\\033\\[K" input))
+            (has-cursor-pos (string-match-p "\\033\\[[0-9]+;[0-9]+H" input))
+            (has-cursor-move (string-match-p "\\033\\[[0-9]*[ABCD]" input))
+            (escape-count (cl-count ?\033 input)))
+
+        ;; If we see multiple escape sequences that look like redrawing,
+        ;; or we're already buffering, add to buffer
+        (if (or (and (>= escape-count 3)
+                     (or has-clear-line has-cursor-pos has-cursor-move))
+                claude-posframe--multiline-buffer)
+            (progn
+              ;; Add to buffer
+              (setq claude-posframe--multiline-buffer
+                    (concat claude-posframe--multiline-buffer input))
+              ;; Cancel existing timer
+              (when claude-posframe--multiline-buffer-timer
+                (cancel-timer claude-posframe--multiline-buffer-timer))
+              ;; Set timer with configurable delay
+              (setq claude-posframe--multiline-buffer-timer
+                    (run-at-time claude-posframe-multiline-delay nil
+                                 (lambda (buf)
+                                   (when (buffer-live-p buf)
+                                     (with-current-buffer buf
+                                       (when claude-posframe--multiline-buffer
+                                         (let ((inhibit-redisplay t)
+                                               (data claude-posframe--multiline-buffer))
+                                           ;; Clear buffer first to prevent recursion
+                                           (setq claude-posframe--multiline-buffer nil
+                                                 claude-posframe--multiline-buffer-timer nil)
+                                           ;; Process all buffered data at once
+                                           (funcall orig-fun
+                                                    (get-buffer-process buf)
+                                                    data))))))
+                                 (current-buffer))))
+          ;; Not multi-line redraw, process normally
+          (funcall orig-fun process input))))))
+
 ;;; Send Commands to Claude
 
 (defun claude-posframe-do-send-command (text)
@@ -469,6 +557,8 @@ This fix come from: https://github.com/anthropics/claude-code/issues/247#issueco
 ;;; Cleanup and Initialization
 (defun claude-posframe--cleanup ()
   "Clean up claude posframe resources."
+  ;; Remove vterm filter advice
+  (advice-remove 'vterm--filter #'claude-posframe--multiline-buffer-filter)
   ;; Clean up all project-specific buffers
   (dolist (buffer (buffer-list))
     (when (string-match-p "\*claude-posframe:" (buffer-name buffer))
