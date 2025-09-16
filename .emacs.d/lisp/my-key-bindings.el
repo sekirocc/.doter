@@ -62,6 +62,7 @@
 
 (bind-key* (kbd "s-T") #'multi-vterm)
 (bind-key* (kbd "C-t") #'claude-posframe-toggle)
+(bind-key* (kbd "C-,") #'claude-posframe-toggle)
 
 (bind-key* (kbd "s-<backspace>") #'my-delete-to-bol)
 
