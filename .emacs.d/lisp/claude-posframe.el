@@ -220,12 +220,12 @@ between reducing flickering and maintaining responsiveness."
     (list width height)))
 
 ;;;###autoload
-(defun claude-posframe-show ()
+(defun claude-posframe-show (&optional claude-switches)
   "Show the claude posframe."
   (interactive)
   (unless (claude-posframe--check-dependencies)
     (user-error "Required dependencies (posframe, vterm) are not available"))
-  (let* ((buffer (claude-posframe--get-buffer))
+  (let* ((buffer (claude-posframe--get-buffer claude-switches))
           (dimensions (claude-posframe--calculate-dimensions))
           (width (car dimensions))
           (height (cadr dimensions)))
@@ -298,12 +298,17 @@ If vterm is in copy mode, exit to insert mode."
               (frame-visible-p frame))))))))
 
 ;;;###autoload
-(defun claude-posframe-toggle ()
+(defun claude-posframe-toggle (&optional arg)
   "Toggle the claude posframe visibility."
-  (interactive)
-  (if (claude-posframe-visible-p)
-    (claude-posframe-hide)
-    (claude-posframe-show)))
+  (interactive "P")
+  (let ((claude-switches (cond
+                           ((equal arg '(4))   ;; C-u
+                             '("--permission-mode bypassPermissions"))
+                           (t nil))))
+    (if (claude-posframe-visible-p)
+      (claude-posframe-hide)
+      (claude-posframe-show claude-switches)))
+  )
 
 ;;;###autoload
 (defun claude-posframe-kill-buffer ()
@@ -364,7 +369,7 @@ This function is deprecated. Use `claude-posframe-mode' instead."
 
 ;;; Buffer Management
 
-(defun claude-posframe--get-buffer ()
+(defun claude-posframe--get-buffer (&optional claude-switches)
   "Get or create the claude vterm buffer using standard Elisp patterns."
   (unless (claude-posframe--check-dependencies)
     (user-error "Required dependencies (posframe, vterm) are not available"))
@@ -392,7 +397,9 @@ This function is deprecated. Use `claude-posframe-mode' instead."
       (setq buffer (generate-new-buffer buffer-name))
       (with-current-buffer buffer
         ;; Set the working directory before initializing vterm
-        (let ((vterm-shell claude-posframe-shell)
+        (let ((vterm-shell (if claude-switches
+                             (concat claude-posframe-shell " " (mapconcat #'identity claude-switches " "))
+                             claude-posframe-shell))
                (default-directory current-dir))
           (condition-case err
             (progn
@@ -478,9 +485,9 @@ ORIG-FUN is the original vterm--filter function.
 PROCESS is the vterm process.
 INPUT is the terminal output string."
   (if (or (not claude-posframe-buffer-multiline-output)
-          (not (string-match-p "\\*claude-posframe" (buffer-name (process-buffer process)))))
-      ;; Feature disabled or not a Claude posframe buffer, pass through normally
-      (funcall orig-fun process input)
+        (not (string-match-p "\\*claude-posframe" (buffer-name (process-buffer process)))))
+    ;; Feature disabled or not a Claude posframe buffer, pass through normally
+    (funcall orig-fun process input)
     (with-current-buffer (process-buffer process)
       ;; Check if this looks like multi-line input box redraw
       ;; Common patterns when redrawing multi-line input:
@@ -489,39 +496,39 @@ INPUT is the terminal output string."
       ;; - ESC[<n>A/B/C/D (cursor movement)
       ;; - Multiple of these in sequence
       (let ((has-clear-line (string-match-p "\\033\\[K" input))
-            (has-cursor-pos (string-match-p "\\033\\[[0-9]+;[0-9]+H" input))
-            (has-cursor-move (string-match-p "\\033\\[[0-9]*[ABCD]" input))
-            (escape-count (cl-count ?\033 input)))
+             (has-cursor-pos (string-match-p "\\033\\[[0-9]+;[0-9]+H" input))
+             (has-cursor-move (string-match-p "\\033\\[[0-9]*[ABCD]" input))
+             (escape-count (cl-count ?\033 input)))
 
         ;; If we see multiple escape sequences that look like redrawing,
         ;; or we're already buffering, add to buffer
         (if (or (and (>= escape-count 3)
-                     (or has-clear-line has-cursor-pos has-cursor-move))
-                claude-posframe--multiline-buffer)
-            (progn
-              ;; Add to buffer
-              (setq claude-posframe--multiline-buffer
-                    (concat claude-posframe--multiline-buffer input))
-              ;; Cancel existing timer
-              (when claude-posframe--multiline-buffer-timer
-                (cancel-timer claude-posframe--multiline-buffer-timer))
-              ;; Set timer with configurable delay
-              (setq claude-posframe--multiline-buffer-timer
-                    (run-at-time claude-posframe-multiline-delay nil
-                                 (lambda (buf)
-                                   (when (buffer-live-p buf)
-                                     (with-current-buffer buf
-                                       (when claude-posframe--multiline-buffer
-                                         (let ((inhibit-redisplay t)
-                                               (data claude-posframe--multiline-buffer))
-                                           ;; Clear buffer first to prevent recursion
-                                           (setq claude-posframe--multiline-buffer nil
-                                                 claude-posframe--multiline-buffer-timer nil)
-                                           ;; Process all buffered data at once
-                                           (funcall orig-fun
-                                                    (get-buffer-process buf)
-                                                    data))))))
-                                 (current-buffer))))
+                  (or has-clear-line has-cursor-pos has-cursor-move))
+              claude-posframe--multiline-buffer)
+          (progn
+            ;; Add to buffer
+            (setq claude-posframe--multiline-buffer
+              (concat claude-posframe--multiline-buffer input))
+            ;; Cancel existing timer
+            (when claude-posframe--multiline-buffer-timer
+              (cancel-timer claude-posframe--multiline-buffer-timer))
+            ;; Set timer with configurable delay
+            (setq claude-posframe--multiline-buffer-timer
+              (run-at-time claude-posframe-multiline-delay nil
+                (lambda (buf)
+                  (when (buffer-live-p buf)
+                    (with-current-buffer buf
+                      (when claude-posframe--multiline-buffer
+                        (let ((inhibit-redisplay t)
+                               (data claude-posframe--multiline-buffer))
+                          ;; Clear buffer first to prevent recursion
+                          (setq claude-posframe--multiline-buffer nil
+                            claude-posframe--multiline-buffer-timer nil)
+                          ;; Process all buffered data at once
+                          (funcall orig-fun
+                            (get-buffer-process buf)
+                            data))))))
+                (current-buffer))))
           ;; Not multi-line redraw, process normally
           (funcall orig-fun process input))))))
 
