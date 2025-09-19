@@ -149,7 +149,7 @@ exists it returns /file/name_Copy2.ext etc."
 
   ;; 鼠标放上去的效果，加了下划线和 hl line 的背景色
   (defface treemacs-button-underline-only
-    '((t :underline t :foreground nil :background nil :box nil :inherit 'my-treemacs-custom-line-highlight))
+    '((t :underline t :foreground "unspecified" :background "unspecified" :box nil :inherit 'my-treemacs-custom-line-highlight))
     "Face that only adds an underline on hover, no background color."
     :group 'treemacs-faces)
   (put 'treemacs-button 'mouse-face 'treemacs-button-underline-only)
