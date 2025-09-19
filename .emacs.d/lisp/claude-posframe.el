@@ -223,6 +223,12 @@ between reducing flickering and maintaining responsiveness."
   (with-current-buffer buffer
     (setq-local header-line-format " ")
     (setq-local mode-line-format " ")
+    ;; Set buffer-local fringe for current window
+    (when (get-buffer-window (current-buffer))
+      (let* ((fringe-width 6))  ; 固定6像素的 fringe
+        (set-window-fringes (get-buffer-window (current-buffer))
+                           fringe-width fringe-width)
+        (message "Claude posframe padding applied: fringe=%d" fringe-width)))
     ;; Use face-remap-add-relative for buffer-local face changes
     (face-remap-add-relative 'header-line
       :height 0.8
@@ -245,6 +251,19 @@ between reducing flickering and maintaining responsiveness."
       :underline nil
       :box nil
       :inherit 'default)))
+
+(defun claude-posframe-debug-padding ()
+  "Debug function to check padding settings."
+  (interactive)
+  (let ((buffer (get-buffer (claude-posframe--get-buffer-name))))
+    (if buffer
+        (with-current-buffer buffer
+          (message "Header line: %s | Mode line: %s | Fringes: %s | Face remaps: %d"
+                   header-line-format
+                   mode-line-format
+                   (window-fringes (get-buffer-window buffer))
+                   (length face-remapping-alist)))
+      (message "Claude posframe buffer not found"))))
 
 ;;;###autoload
 (defun claude-posframe-show (&optional switches)
@@ -270,7 +289,10 @@ between reducing flickering and maintaining responsiveness."
       :respect-header-line t
       :respect-mode-line t
       :accept-focus t)
-    (claude-posframe--set-buffer-padding buffer)
+    ;; Apply padding after posframe is fully displayed
+    (run-with-timer 0.01 nil
+      (lambda ()
+        (claude-posframe--set-buffer-padding buffer)))
     (when claude-posframe-auto-scroll
       (claude-posframe--ensure-scroll))
     (run-hooks 'claude-posframe-show-hook)))
