@@ -223,26 +223,28 @@ between reducing flickering and maintaining responsiveness."
   (with-current-buffer buffer
     (setq-local header-line-format " ")
     (setq-local mode-line-format " ")
-    (let* ((line-height (window-line-height))
-            (header-height (* line-height 0.8))  ; 你设的 :height 0.8
-            (fringe-width (round header-height))) ; 转为整数
-      (fringe-mode fringe-width))
-    (set-face-attribute 'header-line nil
+    ;; Use face-remap-add-relative for buffer-local face changes
+    (face-remap-add-relative 'header-line
       :height 0.8
       :background (face-attribute 'default :background)
       :foreground (face-attribute 'default :foreground)
       :underline nil
       :box nil
       :inherit 'default)
-    (set-face-attribute 'mode-line-active nil
+    (face-remap-add-relative 'mode-line-active
       :height 0.8
       :background (face-attribute 'default :background)
       :foreground (face-attribute 'default :foreground)
       :underline nil
       :box nil
       :inherit 'default)
-    )
-  )
+    (face-remap-add-relative 'mode-line-inactive
+      :height 0.8
+      :background (face-attribute 'default :background)
+      :foreground (face-attribute 'default :foreground)
+      :underline nil
+      :box nil
+      :inherit 'default)))
 
 ;;;###autoload
 (defun claude-posframe-show (&optional switches)
@@ -268,7 +270,7 @@ between reducing flickering and maintaining responsiveness."
       :respect-header-line t
       :respect-mode-line t
       :accept-focus t)
-    (claude-posframe--setup-buffer-padding buffer)
+    (claude-posframe--set-buffer-padding buffer)
     (when claude-posframe-auto-scroll
       (claude-posframe--ensure-scroll))
     (run-hooks 'claude-posframe-show-hook)))
