@@ -257,19 +257,19 @@
          :weight normal)))
   "custom highlight for treemacs current line")
 
-;;; Theme Loading and Face Configuration
-(use-package vscode-dark-plus-theme
-  :ensure t
-  :config
-  ;; 禁用有问题的 org-todo box 配置
-  (setq vscode-dark-plus-box-org-todo nil)
-  (load-theme 'vscode-dark-plus t)
-  (add-hook 'after-load-theme-hook
-    (lambda ()
-      (set-face-attribute 'font-lock-keyword-face nil :foreground "orchid")))
-  )
+;;  ;;; Theme Loading and Face Configuration
+;;  (use-package vscode-dark-plus-theme
+;;    :ensure t
+;;    :config
+;;    ;; 禁用有问题的 org-todo box 配置
+;;    (setq vscode-dark-plus-box-org-todo nil)
+;;    (load-theme 'vscode-dark-plus t)
+;;    (add-hook 'after-load-theme-hook
+;;      (lambda ()
+;;        (set-face-attribute 'font-lock-keyword-face nil :foreground "orchid")))
+;;    )
 
-;; (load-theme 'doom-xcode t)
+(load-theme 'doom-material-dark t)
 
 ;;; Terminal Colors
 (require 'ansi-color)
@@ -666,6 +666,8 @@
   '(flymake-error ((t (:foreground "Yellow" :underline nil :weight normal))))
   '(flymake-note ((t (:underline nil))))
   '(flymake-warning ((t (:underline nil))))
+  '(font-lock-comment-face ((t (:foreground "gray"))))
+  '(font-lock-doc-face ((t (:inherit font-lock-comment-face :foreground "gray"))))
   '(font-lock-keyword-face ((t (:foreground "orchid" :weight normal))))
   '(font-lock-preprocessor-face ((t (:weight normal))))
   '(fringe ((t (:foreground unspecified :background unspecified :inherit default))))
