@@ -219,13 +219,38 @@ between reducing flickering and maintaining responsiveness."
                    (round (* (frame-height) claude-posframe-height-ratio)))))
     (list width height)))
 
+(defun claude-posframe--set-buffer-padding(buffer)
+  (with-current-buffer buffer
+    (setq-local header-line-format " ")
+    (setq-local mode-line-format " ")
+    (let* ((line-height (window-line-height))
+            (header-height (* line-height 0.8))  ; 你设的 :height 0.8
+            (fringe-width (round header-height))) ; 转为整数
+      (fringe-mode fringe-width))
+    (set-face-attribute 'header-line nil
+      :height 0.8
+      :background (face-attribute 'default :background)
+      :foreground (face-attribute 'default :foreground)
+      :underline nil
+      :box nil
+      :inherit 'default)
+    (set-face-attribute 'mode-line-active nil
+      :height 0.8
+      :background (face-attribute 'default :background)
+      :foreground (face-attribute 'default :foreground)
+      :underline nil
+      :box nil
+      :inherit 'default)
+    )
+  )
+
 ;;;###autoload
-(defun claude-posframe-show (&optional claude-switches)
+(defun claude-posframe-show (&optional switches)
   "Show the claude posframe."
   (interactive)
   (unless (claude-posframe--check-dependencies)
     (user-error "Required dependencies (posframe, vterm) are not available"))
-  (let* ((buffer (claude-posframe--get-buffer claude-switches))
+  (let* ((buffer (claude-posframe--get-buffer switches))
           (dimensions (claude-posframe--calculate-dimensions))
           (width (car dimensions))
           (height (cadr dimensions)))
@@ -240,7 +265,10 @@ between reducing flickering and maintaining responsiveness."
       :border-width claude-posframe-border-width
       :border-color claude-posframe-border-color
       :poshandler (claude-posframe--get-position-handler)
+      :respect-header-line t
+      :respect-mode-line t
       :accept-focus t)
+    (claude-posframe--setup-buffer-padding buffer)
     (when claude-posframe-auto-scroll
       (claude-posframe--ensure-scroll))
     (run-hooks 'claude-posframe-show-hook)))
@@ -299,16 +327,14 @@ If vterm is in copy mode, exit to insert mode."
 
 ;;;###autoload
 (defun claude-posframe-toggle (&optional arg)
-  "Toggle the claude posframe visibility."
+  "Toggle the claude posframe visibility.
+With prefix argument ARG (C-u), start Claude with bypassed permissions."
   (interactive "P")
-  (let ((claude-switches (cond
-                           ((equal arg '(4))   ;; C-u
-                             '("--permission-mode bypassPermissions"))
-                           (t nil))))
+  (let ((switches (when (equal arg '(4))
+                    '("--permission-mode bypassPermissions"))))
     (if (claude-posframe-visible-p)
       (claude-posframe-hide)
-      (claude-posframe-show claude-switches)))
-  )
+      (claude-posframe-show switches))))
 
 ;;;###autoload
 (defun claude-posframe-kill-buffer ()
@@ -369,7 +395,7 @@ This function is deprecated. Use `claude-posframe-mode' instead."
 
 ;;; Buffer Management
 
-(defun claude-posframe--get-buffer (&optional claude-switches)
+(defun claude-posframe--get-buffer (&optional switches)
   "Get or create the claude vterm buffer using standard Elisp patterns."
   (unless (claude-posframe--check-dependencies)
     (user-error "Required dependencies (posframe, vterm) are not available"))
@@ -397,13 +423,14 @@ This function is deprecated. Use `claude-posframe-mode' instead."
       (setq buffer (generate-new-buffer buffer-name))
       (with-current-buffer buffer
         ;; Set the working directory before initializing vterm
-        (let ((vterm-shell (if claude-switches
-                             (concat claude-posframe-shell " " (mapconcat #'identity claude-switches " "))
+        (let ((vterm-shell (if switches
+                             (concat claude-posframe-shell " " (mapconcat #'identity switches " "))
                              claude-posframe-shell))
                (default-directory current-dir))
           (condition-case err
             (progn
               (vterm-mode)
+              ;; Top padding will be set up via vterm-mode-hook
               ;; Configure vterm for better Unicode support
               (when claude-posframe-fix-unicode
                 (setq-local vterm-max-scrollback 5000)
