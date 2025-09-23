@@ -89,6 +89,10 @@ return {
           ['<Esc>'] = cmp.mapping(function(fallback)
             if cmp.visible() then
               cmp.close()
+              -- 关闭补全候选框后，如果在插入模式，则退出到 normal 模式
+              if vim.fn.mode() == 'i' then
+                vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<Esc>', true, true, true), 'n', true)
+              end
             else
               -- 在命令行模式模拟 Ctrl-c 退出，其他模式正常 fallback
               if vim.fn.mode() == 'c' then
