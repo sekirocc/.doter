@@ -31,7 +31,7 @@
            ("(" . my-wrap-region-with-parens)
            ("[" . my-wrap-region-with-brackets)
            ("{" . my-wrap-region-with-braces)
-           ("'" . my-wrap-region-with-single-quotes)
+           ("C-'" . my-wrap-region-with-single-quotes)
            ("\"" . my-wrap-region-with-double-quotes)
            ("_" . my-wrap-region-with-underscores)
            ("`" . my-wrap-region-with-back-quotes)
