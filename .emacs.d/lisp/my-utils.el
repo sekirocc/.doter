@@ -993,6 +993,15 @@ If buffer-or-name is nil return current buffer's mode."
       (goto-char pos)
       (message "Character `%c' not found in this line." char))))
 
+
+ (defun my-scroll-cursor-down ()
+   (interactive)
+   (next-line (/ (window-height (selected-window)) 2)))
+
+ (defun my-scroll-cursor-up ()
+   (interactive)
+   (previous-line (/ (window-height (selected-window)) 2)))
+
 (defun run-command-in-directory (dir cmd &rest args)
   "Run a command in the specified directory.
 If DIR is nil, use `default-directory'.

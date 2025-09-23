@@ -58,7 +58,7 @@ respectively."
   ("C-c (" . my-wrap-region-with-parens)
   ("C-c [" . my-wrap-region-with-brackets)
   ("C-c {" . my-wrap-region-with-braces)
-  ("C-c '" . my-wrap-region-with-single-quotes)
+  ("C-c C-'" . my-wrap-region-with-single-quotes)
   ("C-c \"" . my-wrap-region-with-double-quotes)
   ("C-c _" . my-wrap-region-with-underscores)
   ("C-c `" . my-wrap-region-with-back-quotes))
