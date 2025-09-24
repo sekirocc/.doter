@@ -518,8 +518,7 @@ If buffer-or-name is nil return current buffer's mode."
     (let ((beg (region-beginning))
            (end (copy-marker (region-end))))
       (kill-region beg end))
-    (delete-forward-char
-      (or arg 1))))
+    (delete-forward-char (or arg 1))))
 
 (defun my-kill-whole-line-or-kill-region (arg)
   (interactive "p")
@@ -581,6 +580,12 @@ If buffer-or-name is nil return current buffer's mode."
 (setq my-visual-line-selected nil)
 
 
+(defun my-set-visual-selected(&rest r)
+  (setq my-visual-line-selected t))
+;; kill-whole-line 不会触发 deactivate mark，所以我们手动设置 visual-line 模式
+(advice-add 'kill-whole-line :after #'my-set-visual-selected)
+
+
 (defun my-kill-ring-save-advice (orig-fun &rest args)
   (let ((result (apply orig-fun args))) ; 先执行原始的 kill-ring-save
     ;; 如果是 visual line selection 模式，则在复制的内容最后，加上一个换行符
@@ -613,8 +618,7 @@ If buffer-or-name is nil return current buffer's mode."
     ;; 标记这是一个行选择
     (setq my-visual-line-selected t)
     (save-excursion
-      (copy-region-as-kill (line-beginning-position)
-        (line-end-position)))
+      (copy-region-as-kill (line-beginning-position) (line-end-position)))
     ;; copy-region-as-kill 不会触发 kill-ring-save advice
     ;; 所以我们手动加换行
     (when (stringp (car kill-ring))
