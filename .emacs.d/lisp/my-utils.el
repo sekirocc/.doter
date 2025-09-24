@@ -603,6 +603,24 @@ If buffer-or-name is nil return current buffer's mode."
       my-visual-line-start-num nil)))
 
 
+(defun my-smart-copy-line-or-region ()
+  "智能复制：有选区则复制选区（支持 visual-line），无选区则复制当前行。"
+  (interactive)
+  (if (use-region-p)
+    ;; 有选区：直接调用 kill-ring-save（会触发 advice 加换行）
+    (call-interactively #'kill-ring-save)
+    ;; 无选区：手动复制当前行
+    ;; 标记这是一个行选择
+    (setq my-visual-line-selected t)
+    (save-excursion
+      (copy-region-as-kill (line-beginning-position)
+        (line-end-position)))
+    ;; copy-region-as-kill 不会触发 kill-ring-save advice
+    ;; 所以我们手动加换行
+    (when (stringp (car kill-ring))
+      (kill-new (concat (car kill-ring) "\n")))
+    (message "Copied line")))
+
 (defun my-select-current-line-and-forward-line (arg)
   "Select the current line and move the cursor by ARG lines IF
   no region is selected.
