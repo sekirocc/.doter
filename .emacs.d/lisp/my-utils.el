@@ -277,7 +277,9 @@ If buffer-or-name is nil return current buffer's mode."
       (progn
         (next-line)
         (beginning-of-line)
-        (yank arg))
+        (yank arg)
+        ;; 末尾有一个换行，光标要往回走一下
+        (backward-char 1))
       (yank arg))))
 
 (defun my-yank-but-check-newline-above (arg)
@@ -290,7 +292,9 @@ If buffer-or-name is nil return current buffer's mode."
     (if my-visual-line-selected
       (progn
         (beginning-of-line)
-        (yank arg))
+        (yank arg)
+        ;; 末尾有一个换行，光标要往回走一下
+        (backward-char 1))
       (yank arg))))
 
 
@@ -608,7 +612,7 @@ If buffer-or-name is nil return current buffer's mode."
       my-visual-line-start-num nil)))
 
 
-(defun my-smart-copy-line-or-region ()
+(defun my-copy-whole-line-or-region ()
   "智能复制：有选区则复制选区（支持 visual-line），无选区则复制当前行。"
   (interactive)
   (if (use-region-p)
