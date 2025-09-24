@@ -201,7 +201,7 @@
     (define-key god-local-mode-map (kbd "v") #'my-set-mark-command-or-deactivate-mark)
     (define-key god-local-mode-map (kbd "V") #'my-select-current-line-and-forward-line)
     (define-key god-local-mode-map (kbd "J") #'my-join-lines)
-    (define-key god-local-mode-map (kbd "y") #'kill-ring-save)
+    (define-key god-local-mode-map (kbd "y") #'my-copy-whole-line-or-region)
     (define-key god-local-mode-map (kbd "p") #'my-yank-but-check-newline-bellow)
     (define-key god-local-mode-map (kbd "P") #'my-yank-but-check-newline-above) ;; same as yank
     (define-key god-local-mode-map (kbd "u") #'undo-tree-undo)

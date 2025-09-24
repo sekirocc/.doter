@@ -87,6 +87,7 @@
          my-select-to-bol
          my-select-to-eol
          my-set-mark-command-or-deactivate-mark
+         my-smart-copy-line-or-region
          my-toggle-case-char
          my-toggle-er/mark-outside-paren
          my-wrap-region-with-double-quotes
