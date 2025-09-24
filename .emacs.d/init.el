@@ -370,6 +370,7 @@
     (if mark-active
       (list (region-beginning) (region-end))
       (message "Copied line")
+      (setq my-visual-line-selected t)
       (list (line-beginning-position) (line-beginning-position 2)))))
 
 ;;; ===================================================================

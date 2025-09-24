@@ -360,8 +360,8 @@
     ;; (define-key god-local-mode-map (kbd "C-f") #'scroll-full-page-up)
     ;; (define-key god-local-mode-map (kbd "C-b") #'scroll-full-page-down)
 
-    (define-key god-local-mode-map (kbd ";") #'my-scroll-cursor-down)
-    (define-key god-local-mode-map (kbd "'") #'my-scroll-cursor-up)
+    (define-key god-local-mode-map (kbd ";") #'scroll-up-command)
+    (define-key god-local-mode-map (kbd "'") #'scroll-down-command)
     ;; (define-key god-local-mode-map (kbd "\\") #'recenter-top-bottom)
 
 

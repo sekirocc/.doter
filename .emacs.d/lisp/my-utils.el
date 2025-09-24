@@ -273,13 +273,11 @@ If buffer-or-name is nil return current buffer's mode."
            (end (copy-marker (region-end))))
       (delete-region beg end)
       (yank))
-    (if (my-copied-content-is-end-of-newline)
+    (if my-visual-line-selected
       (progn
-        (end-of-line)
-        (newline)
+        (next-line)
         (beginning-of-line)
-        (yank arg)
-        (backward-delete-char 1))
+        (yank arg))
       (yank arg))))
 
 (defun my-yank-but-check-newline-above (arg)
@@ -289,13 +287,10 @@ If buffer-or-name is nil return current buffer's mode."
            (end (copy-marker (region-end))))
       (delete-region beg end)
       (yank))
-    (if (my-copied-content-is-end-of-newline)
+    (if my-visual-line-selected
       (progn
         (beginning-of-line)
-        (newline)
-        (previous-line)
-        (yank arg)
-        (delete-char 1))
+        (yank arg))
       (yank arg))))
 
 
@@ -583,11 +578,28 @@ If buffer-or-name is nil return current buffer's mode."
 
 (setq my-visual-line-selection nil)
 (setq my-visual-line-start-num nil)
+(setq my-visual-line-selected nil)
 
 
+(defun my-kill-ring-save-advice (orig-fun &rest args)
+  (let ((result (apply orig-fun args))) ; 先执行原始的 kill-ring-save
+    ;; 如果是 visual line selection 模式，则在复制的内容最后，加上一个换行符
+    (when (and my-visual-line-selection
+            (stringp (car kill-ring)))
+      (let ((current-text (car kill-ring)))
+        (setcar kill-ring (concat current-text "\n"))
+        ))
+    result))
+(advice-add 'kill-ring-save :around #'my-kill-ring-save-advice)
+
+;; 这个会在最后执行，所以做清理动作
 (add-hook 'deactivate-mark-hook
   (lambda ()
-    (setq my-visual-line-selection nil
+    (if my-visual-line-selection
+        (setq my-visual-line-selected t)
+        (setq my-visual-line-selected nil))
+    (setq
+      my-visual-line-selection nil
       my-visual-line-start-num nil)))
 
 
@@ -994,13 +1006,13 @@ If buffer-or-name is nil return current buffer's mode."
       (message "Character `%c' not found in this line." char))))
 
 
- (defun my-scroll-cursor-down ()
-   (interactive)
-   (next-line (/ (window-height (selected-window)) 2)))
+(defun my-scroll-cursor-down ()
+  (interactive)
+  (next-line (/ (window-height (selected-window)) 2)))
 
- (defun my-scroll-cursor-up ()
-   (interactive)
-   (previous-line (/ (window-height (selected-window)) 2)))
+(defun my-scroll-cursor-up ()
+  (interactive)
+  (previous-line (/ (window-height (selected-window)) 2)))
 
 (defun run-command-in-directory (dir cmd &rest args)
   "Run a command in the specified directory.
