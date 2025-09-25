@@ -24,9 +24,14 @@
 
   (define-key vterm-mode-map (kbd "C-s-c")  #'(lambda() (interactive) (vterm-send-key "c" nil nil t)))
   (define-key vterm-mode-map (kbd "M-i")  #'er/expand-region)
-  (add-hook 'vterm-copy-mode-hook #'(lambda() (if (bound-and-true-p vterm-copy-mode)
-                                                (my-special-buffer-keys-minor-mode 1)
-                                                (my-special-buffer-keys-minor-mode 0))))
+
+  (defun my-toggle-legendary-buffer-for-vterm()
+    (if (bound-and-true-p vterm-copy-mode)
+      (my-remove-from-legendary-buffers "*vterm")
+      (my-add-to-legendary-buffers "*vterm"))
+    (refresh-current-mode))
+
+  (add-hook 'vterm-copy-mode-hook #'my-toggle-legendary-buffer-for-vterm)
   (keymap-unset vterm-mode-map "M-`")
   (keymap-unset vterm-mode-map "M-:")
 
@@ -57,15 +62,22 @@
 
 
 
+(defun me/vterm-toggle-scroll (&rest event)
+  (when (eq major-mode 'vterm-mode)
+    (let ((event-type (car-safe (car-safe event))))
+      (cond ((eq event-type
+               'triple-wheel-up)
+              (unless vterm-copy-mode
+                (vterm-copy-mode 1)))
+        ((eq event-type
+           'triple-wheel-down)
+          (when (and vterm-copy-mode
+                  (> (window-end) (buffer-size)))
+            (vterm-copy-mode-done nil)))))))
+
 ;; 当用户主动滚动到上方时，自动进入 copy mode，从而阻止自动刷新终端
 (with-eval-after-load 'pixel-scroll
-  (advice-add 'pixel-scroll-precision :after
-    (defun me/vterm-toggle-scroll (&rest _)
-      (when (eq major-mode 'vterm-mode)
-        (if (> (window-end) (buffer-size))
-          (when vterm-copy-mode (vterm-copy-mode-done nil))
-          (vterm-copy-mode 1)))))
-  )
+  (advice-add 'pixel-scroll-precision :after #'me/vterm-toggle-scroll))
 
 
 (provide 'init-vterm)
