@@ -150,7 +150,7 @@
 
 (defun my-god-should-enable-line-number-mode()
   "Check if line number mode should be enabled."
-  t)
+  (not (derived-mode-p 'vterm-mode)))
 
 (setq should-not-display-dark-background-modes (list
                                                  "dired-mode"

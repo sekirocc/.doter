@@ -61,19 +61,17 @@
   )
 
 
-
 (defun me/vterm-toggle-scroll (&rest event)
   (when (eq major-mode 'vterm-mode)
     (let ((event-type (car-safe (car-safe event))))
-      (cond ((eq event-type
-               'triple-wheel-up)
-              (unless vterm-copy-mode
-                (vterm-copy-mode 1)))
-        ((eq event-type
-           'triple-wheel-down)
-          (when (and vterm-copy-mode
-                  (> (window-end) (buffer-size)))
+      (cond
+        ((eq event-type 'triple-wheel-up)
+          (unless vterm-copy-mode (vterm-copy-mode 1)))
+        ((eq event-type 'triple-wheel-down)
+          (when (and vterm-copy-mode (> (window-end) (buffer-size)))
             (vterm-copy-mode-done nil)))))))
+
+
 
 ;; 当用户主动滚动到上方时，自动进入 copy mode，从而阻止自动刷新终端
 (with-eval-after-load 'pixel-scroll

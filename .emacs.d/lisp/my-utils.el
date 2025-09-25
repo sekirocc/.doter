@@ -605,8 +605,8 @@ If buffer-or-name is nil return current buffer's mode."
 (add-hook 'deactivate-mark-hook
   (lambda ()
     (if my-visual-line-selection
-        (setq my-visual-line-selected t)
-        (setq my-visual-line-selected nil))
+      (setq my-visual-line-selected t)
+      (setq my-visual-line-selected nil))
     (setq
       my-visual-line-selection nil
       my-visual-line-start-num nil)))
@@ -1055,5 +1055,28 @@ Return trimmed stdout if success, nil otherwise."
           (string-trim (buffer-string)))
         nil)
       (kill-buffer stdout-buffer))))
+
+
+(defun my-pp-region (beg end)
+  "Use `pp' to format the selected Elisp code, then indent and untabify."
+  (interactive "r")
+  (let
+    ((str (buffer-substring-no-properties beg end))
+      insert-start
+      insert-end)
+    (save-excursion
+      (delete-region beg end) (setq insert-start (point))
+      (condition-case err
+        (let ((sexp (read str))) (insert (pp-to-string sexp)))
+        (error (insert str)
+          (user-error "Failed to parse Elisp: %s"
+            (error-message-string err))))
+      (setq insert-end (point))
+      (indent-region insert-start insert-end)
+      (untabify insert-start insert-end))))
+
+
+
+
 
 (provide 'my-utils)
