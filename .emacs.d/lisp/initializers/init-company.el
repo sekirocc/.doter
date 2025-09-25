@@ -27,11 +27,11 @@
   ;; Posframe settings
   (setq company-tooltip-scrollbar-width 0
         company-posframe-show-params (list
-                                      :internal-border-color (face-foreground 'vertical-border)
-                                      :internal-border-width my-posframe-border-width
+                                      ; :internal-border-color (face-foreground 'vertical-border)
+                                      ; :internal-border-width my-posframe-border-width
                                       :left-fringe 0
                                       :right-fringe 0
-                                      :line-height 1.2))
+                                      :line-height 1.0))
 
   ;; Key bindings for company-active-map
   (define-key company-active-map (kbd "<TAB>") #'company-select-next-if-tooltip-visible-or-complete-selection)

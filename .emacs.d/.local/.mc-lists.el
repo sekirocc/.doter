@@ -67,6 +67,7 @@
          mwim-beginning-of-code-or-line
          mwim-end-of-code-or-line
          my-backward-char-no-cross-line
+         my-copy-whole-line-or-region
          my-delete-char
          my-delete-char-or-kill-region
          my-delete-to-beginning
