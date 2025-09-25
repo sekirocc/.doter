@@ -88,6 +88,17 @@
                        "cnfonts-ui-mode"
                        "deadgrep-edit-mode"))
 
+
+(defun my-change-buffer-name-from-special-to-legendary(buffer-name)
+  (setq special-buffers (remove buffer-name special-buffers))
+  (add-to-list 'legendary-buffers buffer-name))
+
+(defun my-change-buffer-name-from-legendary-to-special(buffer-name)
+  (setq legendary-buffers (remove buffer-name legendary-buffers))
+  (add-to-list 'special-buffers buffer-name))
+
+
+
 (defun my-god-this-is-special-buffer (bufname)
   "Check if BUFNAME is a special buffer."
   (interactive)
