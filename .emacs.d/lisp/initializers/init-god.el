@@ -46,6 +46,7 @@
                        "*Ilist*"
                        "*NeoTree*"))
 
+
 ;; legendary-buffers are not affected by god-mode AND my-special-buffer-keys-minor-mode-map
 (setq legendary-buffers (list
                          "*this-buffer-is-left-alone-without-god-mode-at-all"
@@ -82,7 +83,6 @@
                        "slime-mode"
                        "minibuffer-mode"
                        "eat-mode"
-                       "vterm-mode"
                        "inferior-python-mode"
                        "fundamental-mode"
                        "cnfonts-ui-mode"
@@ -98,6 +98,13 @@
   (add-to-list 'special-buffers buffer-name))
 
 
+(defun my-add-to-legendary-buffers(buffer-name)
+  (add-to-list 'legendary-buffers buffer-name)
+  )
+
+(defun my-remove-from-legendary-buffers(buffer-name)
+  (setq legendary-buffers (remove buffer-name legendary-buffers))
+  )
 
 (defun my-god-this-is-special-buffer (bufname)
   "Check if BUFNAME is a special buffer."
