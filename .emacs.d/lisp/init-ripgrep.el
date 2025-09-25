@@ -23,6 +23,24 @@
     )
   :config
   (setq rg-command-line-flags '("--context" "2"))
+  (setq rg-show-header nil)
+
+
+  (defun my-disable-my-special-buffer-keys (&rest r)
+    (my-change-buffer-name-from-special-to-legendary (buffer-name))
+    (my-special-buffer-keys-minor-mode 0))
+
+  (defun my-enable-my-special-buffer-keys (&rest r)
+    (my-change-buffer-name-from-legendary-to-special (buffer-name))
+    (my-special-buffer-keys-minor-mode 1))
+
+
+  (advice-add 'wgrep-change-to-wgrep-mode :after #'my-disable-my-special-buffer-keys)
+  (advice-add 'wgrep-finish-edit :after #'my-enable-my-special-buffer-keys)
+
+  (advice-remove 'wgrep-change-to-wgrep-mode #'my-disable-my-special-buffer-keys)
+  (advice-remove 'wgrep-finish-edit #'my-enable-my-special-buffer-keys)
+
   )
 
 
