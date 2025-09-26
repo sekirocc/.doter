@@ -12,11 +12,23 @@
   :ensure t
   :commands vterm
   :config
+
+  (defun my-vterm-copy-region(arg)
+    (interactive "p")
+    (if (use-region-p)
+      (kill-ring-save (region-beginning) (region-end))
+      (kill-whole-line)))
+
   (setq vterm-timer-delay 0.001
     vterm-max-scrollback 10000)
 
   (define-prefix-command 'my-vterm-ctrl-s-key)
   (define-key vterm-mode-map (kbd "C-s") 'my-vterm-ctrl-s-key)
+
+  (define-key vterm-mode-map (kbd "s-c")  #'vterm-copy-mode-done)
+  (define-key vterm-copy-mode-map (kbd "s-c")  #'my-vterm-copy-region)
+
+  (define-key vterm-copy-mode-map [return] #'vterm-copy-mode)
 
   (define-key vterm-mode-map (kbd "C-s [")  #'vterm-copy-mode)
   (define-key vterm-copy-mode-map (kbd "y")  #'vterm-copy-mode-done)
