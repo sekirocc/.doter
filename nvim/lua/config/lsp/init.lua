@@ -69,9 +69,31 @@ local function custom_attach(client, bufnr)
     vim.lsp.buf.declaration()
     vim.defer_fn(function() require('config.functions').pulse_current_line() end, 100)
   end, bufopts)
-  vim.keymap.set('n', 'gd', function() 
-    vim.lsp.buf.definition()
-    vim.defer_fn(function() require('config.functions').pulse_current_line() end, 100)
+  vim.keymap.set('n', 'gd', function()
+    local params = vim.lsp.util.make_position_params()
+    vim.lsp.buf_request(0, 'textDocument/definition', params, function(err, result, ctx, config)
+      if err then
+        vim.notify('Error getting definition: ' .. err.message, vim.log.levels.ERROR)
+        return
+      end
+
+      if not result or vim.tbl_isempty(result) then
+        vim.notify('No definition found', vim.log.levels.INFO)
+        return
+      end
+
+      -- If only one result, jump directly
+      if #result == 1 then
+        vim.lsp.util.jump_to_location(result[1], 'utf-8')
+      else
+        -- Multiple results, use quickfix but jump to first one
+        vim.lsp.util.jump_to_location(result[1], 'utf-8')
+        -- Optionally populate quickfix for other locations
+        -- vim.fn.setqflist({}, 'r', { items = vim.lsp.util.locations_to_items(result, 'utf-8') })
+      end
+
+      vim.defer_fn(function() require('config.functions').pulse_current_line() end, 100)
+    end)
   end, bufopts)
   vim.keymap.set('n', 'gh',
     function()
@@ -275,13 +297,20 @@ function M.setup()
   require("mason").setup()
   local mason_lsp = require('mason-lspconfig')
   mason_lsp.setup({
-    ensure_installed = { 'ts_ls', },
+    ensure_installed = {}, -- Removed ts_ls to avoid conflict with typescript-tools.nvim
     automatic_installation = true,
   })
 
   -- TypeScript setup
   require("typescript-tools").setup {
     on_attach = custom_attach,
+    settings = {
+      -- Prefer implementation over declaration
+      preferences = {
+        includeCompletionsForModuleExports = true,
+        includeCompletionsWithInsertText = true,
+      },
+    },
   }
 
   -- C++ tools
