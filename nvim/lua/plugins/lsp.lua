@@ -39,5 +39,8 @@ return {
     "pmizio/typescript-tools.nvim",
     dependencies = { "nvim-lua/plenary.nvim", "neovim/nvim-lspconfig" },
     ft = { "typescript", "typescriptreact", "javascript", "javascriptreact" },
+    config = function()
+      -- This is configured in config/lsp/init.lua
+    end,
   },
 }
