@@ -13,8 +13,7 @@ function M.setup()
 
   -- AI/Claude Code keymaps are now handled by lazy.nvim in plugins/claudecode.lua
 
-  -- Easymotion
-  vim.api.nvim_set_keymap("n", "f", "<Plug>(easymotion-bd-w)", { noremap=true, silent=true })
+  -- Easymotion keymaps are now handled by lazy.nvim in plugins/editing.lua
 
   -- Telescope keymaps are now handled by lazy.nvim in plugins/telescope.lua
 
