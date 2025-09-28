@@ -19,9 +19,9 @@ return {
   {
     "terryma/vim-multiple-cursors",
     keys = {
-      "<C-n>",
-      "<C-p>",
-      "<C-x>",
+      { "<C-n>", mode = { "n", "v" } },
+      { "<C-p>", mode = { "n", "v" } },
+      { "<C-x>", mode = { "n", "v" } },
     },
   },
 
@@ -29,6 +29,7 @@ return {
   {
     "easymotion/vim-easymotion",
     keys = {
+      { "f", "<Plug>(easymotion-bd-w)", mode = "n", desc = "EasyMotion word" },
       "<leader><leader>",
     },
   },
