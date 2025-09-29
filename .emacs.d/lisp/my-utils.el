@@ -1076,6 +1076,16 @@ Return trimmed stdout if success, nil otherwise."
       (untabify insert-start insert-end))))
 
 
+(defun cmake-download-cpm()
+  (interactive)
+  (let* ((cmake-dir (file-name-concat (cmake-project-find-root-directory) "cmake"))
+          (cpm-file-path (file-name-concat cmake-dir "CPM.cmake")))
+    (unless (file-exists-p cpm-file-path)
+      (make-directory cmake-dir t)
+      (url-copy-file
+        "https://github.com/cpm-cmake/CPM.cmake/releases/download/v0.42.0/CPM.cmake"
+        cpm-file-path t))
+    (message "saved to %s" cpm-file-path)))
 
 
 
