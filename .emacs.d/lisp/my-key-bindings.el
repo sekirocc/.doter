@@ -33,6 +33,8 @@
 
 (bind-key* (kbd "s-j") #'my-toggle-vterm)
 (bind-key* (kbd "C-'") #'my-toggle-vterm)
+;; terminal need this.
+(bind-key* (kbd "C-c t") #'my-toggle-vterm)
 ;; (bind-key* (kbd "C-`") #'my-toggle-vterm)
 
 (bind-key* (kbd "C-h C-h") #'my-quit-other-window)
@@ -106,8 +108,11 @@
 
 
 ;; jump with C-- C-=, like vscode
-(bind-key* (kbd "C--") 'nice-jumper/backward)
-(bind-key* (kbd "C-_") 'nice-jumper/forward)
+;; note in terminal emacs, C-/ is translated to C-_, which is undo
+(when (display-graphic-p)
+  (bind-key* (kbd "C--") 'nice-jumper/backward)
+  (bind-key* (kbd "C-_") 'nice-jumper/forward)
+)
 
 
 (bind-key* (kbd "C-c \\") 'my-toggle-eldoc-box-help-at-point)
