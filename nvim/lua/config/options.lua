@@ -111,10 +111,7 @@ function M.setup()
 
   -- Plugin-specific settings
 
-  -- Auto-pairs
-  g.AutoPairsShortcutToggle = ''
-  g.AutoPairsShortcutJump = ''
-  g.AutoPairsShortcutBackInsert = ''
+  -- Auto-pairs configuration removed (now using nvim-autopairs with its own config)
 
   -- Multiple cursors
   g.multi_cursor_use_default_mapping = 0
