@@ -81,11 +81,14 @@
 
 (defun me/vterm-toggle-scroll (&rest event)
   (when (eq major-mode 'vterm-mode)
-    (let ((event-type (car-safe (car-safe event))))
+    (let ((scroll-up (if (display-graphic-p) 'triple-wheel-up 'wheel-up))
+           (scroll-down (if (display-graphic-p) 'triple-wheel-down 'wheel-down))
+           (event-type (car-safe (car-safe event))))
+      (message "event-type: %s" event-type)
       (cond
-        ((eq event-type 'triple-wheel-up)
+        ((eq event-type scroll-up)
           (unless vterm-copy-mode (vterm-copy-mode 1)))
-        ((eq event-type 'triple-wheel-down)
+        ((eq event-type scroll-down)
           (when (and vterm-copy-mode (> (window-end) (buffer-size)))
             (vterm-copy-mode-done nil)))))))
 
