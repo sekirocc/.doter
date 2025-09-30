@@ -98,13 +98,13 @@
   (add-to-list 'special-buffers buffer-name))
 
 
-(defun my-add-to-legendary-buffers(buffer-name)
-  (add-to-list 'legendary-buffers buffer-name)
-  )
+(defun my-add-to-legendary-buffers(buffer-names)
+  (dolist (element (if (listp buffer-names) buffer-names (list buffer-names)))
+    (add-to-list 'legendary-buffers element)))
 
-(defun my-remove-from-legendary-buffers(buffer-name)
-  (setq legendary-buffers (remove buffer-name legendary-buffers))
-  )
+(defun my-remove-from-legendary-buffers(buffer-names)
+  (dolist (element (if (listp buffer-names) buffer-names (list buffer-names)))
+  (setq legendary-buffers (remove element legendary-buffers))))
 
 (defun my-god-this-is-special-buffer (bufname)
   "Check if BUFNAME is a special buffer."

@@ -553,11 +553,13 @@
     '("^\\*claude"
        (display-buffer-in-side-window)
        (side . right)
-       (window-width . 90)))
+       (window-width . 90)
+       (window-parameters . ((no-other-window . nil)))))
   (setq claude-code-terminal-backend 'vterm)
   (setq claude-code-vterm-buffer-multiline-output nil)
   (setq claude-code-sandbox-program "claude")
   (advice-add 'claude-code-send-region :after #'(lambda(&arg) (deactivate-mark)(beginning-of-line)))
+  (advice-add 'claude-code-toggle :after #'(lambda() (when (get-buffer-window "*claude-code*") (select-window (get-buffer-window "*claude-code*")))))
   )
 ;; (use-package claudemacs
 ;;   :vc (:fetcher github :repo "cpoile/claudemacs"))

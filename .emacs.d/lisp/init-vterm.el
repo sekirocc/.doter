@@ -45,8 +45,8 @@
 
   (defun my-toggle-legendary-buffer-for-vterm()
     (if (bound-and-true-p vterm-copy-mode)
-      (my-remove-from-legendary-buffers "*vterm")
-      (my-add-to-legendary-buffers "*vterm"))
+      (my-remove-from-legendary-buffers '("*vterm" "*claude"))
+      (my-add-to-legendary-buffers '("*vterm" "*claude")))
     (refresh-current-mode))
 
   (add-hook 'vterm-copy-mode-hook #'my-toggle-legendary-buffer-for-vterm)
