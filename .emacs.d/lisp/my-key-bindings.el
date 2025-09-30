@@ -34,7 +34,7 @@
 (bind-key* (kbd "s-j") #'my-toggle-vterm)
 (bind-key* (kbd "C-'") #'my-toggle-vterm)
 ;; terminal need this.
-(bind-key* (kbd "C-c t") #'my-toggle-vterm)
+(bind-key* (kbd "C-c v") #'my-toggle-vterm)
 ;; (bind-key* (kbd "C-`") #'my-toggle-vterm)
 
 (bind-key* (kbd "C-h C-h") #'my-quit-other-window)
@@ -64,7 +64,7 @@
 
 (bind-key* (kbd "s-T") #'multi-vterm)
 (bind-key* (kbd "C-t") #'claude-posframe-toggle)
-(bind-key* (kbd "C-,") #'claude-posframe-toggle)
+(bind-key* (kbd "C-,") #'claude-code-toggle)
 
 (bind-key* (kbd "s-<backspace>") #'my-delete-to-bol)
 

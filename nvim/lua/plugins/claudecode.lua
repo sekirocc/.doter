@@ -72,6 +72,14 @@ return {
               mode = "t",
               desc = "Hide",
             },
+            claude_hide_backup = {
+              "<C-,>",
+              function(self)
+                self:hide()
+              end,
+              mode = "t",
+              desc = "Hide (backup)",
+            },
           },
           -- 环境变量配置
           env = {
