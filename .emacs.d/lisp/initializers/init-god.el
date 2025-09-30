@@ -55,6 +55,7 @@
                          "*EGLOT"
                          "*terminal*"
                          "*vterm"
+                         "*claude"
                          "*emacs"
                          "*eshell*"
                          "*blink-search"

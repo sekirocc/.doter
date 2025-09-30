@@ -558,8 +558,16 @@
   (setq claude-code-terminal-backend 'vterm)
   (setq claude-code-vterm-buffer-multiline-output nil)
   (setq claude-code-sandbox-program "claude")
+
+  (defun my-select-claude-window ()
+    "Select the claude-code window if visible."
+    (let ((claude-window (seq-find (lambda (win)
+                                     (string-match-p "^\\*claude:" (buffer-name (window-buffer win))))
+                                   (window-list))))
+      (when claude-window (select-window claude-window))))
+
   (advice-add 'claude-code-send-region :after #'(lambda(&arg) (deactivate-mark)(beginning-of-line)))
-  (advice-add 'claude-code-toggle :after #'(lambda() (when (get-buffer-window "*claude-code*") (select-window (get-buffer-window "*claude-code*")))))
+  (advice-add 'claude-code-toggle :after #'my-select-claude-window)
   )
 ;; (use-package claudemacs
 ;;   :vc (:fetcher github :repo "cpoile/claudemacs"))
