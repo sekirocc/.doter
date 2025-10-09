@@ -18,6 +18,8 @@ setopt HIST_NO_STORE
 
 export GIT_PAGER=less
 
+export EDITOR=nvim
+
 
 alias vim="nvim"
 alias em="/Applications/Emacs.app/Contents/MacOS/Emacs -nw"
@@ -273,5 +275,7 @@ export VCPKG_ROOT="$HOME/vcpkg"
 source ~/perl5/perlbrew/etc/bashrc
 
 
+
+source <(fzf --zsh)
 
 alias ffplay="ffplay -vf \"drawtext=text='%{pts\:hms}':x=10:y=10:fontsize=32:fontcolor=yellow:box=1:boxcolor=red@0.8:boxborderw=10\" "

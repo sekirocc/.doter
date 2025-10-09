@@ -1,6 +1,7 @@
 file(REMOVE_RECURSE
-  "/Users/bytedance/.emacs.d/elpa/vterm-20240825.133/vterm-module.pdb"
-  "/Users/bytedance/.emacs.d/elpa/vterm-20240825.133/vterm-module.so"
+  "CMakeFiles/vterm-module.dir/link.d"
+  "/home/nickelchen/.emacs.d/elpa/vterm-20240825.133/vterm-module.pdb"
+  "/home/nickelchen/.emacs.d/elpa/vterm-20240825.133/vterm-module.so"
   "CMakeFiles/vterm-module.dir/elisp.c.o"
   "CMakeFiles/vterm-module.dir/elisp.c.o.d"
   "CMakeFiles/vterm-module.dir/utf8.c.o"

@@ -356,23 +356,6 @@
 ;; .env
 (add-to-list 'auto-mode-alist '("\\.env.*\\'" . conf-mode))
 
-                                        ; ;;; Advice for Enhanced Editing
-                                        ; (defadvice kill-region (before slick-cut activate compile)
-                                        ;   "When called interactively with no active region, kill a single line instead."
-                                        ;   (interactive
-                                        ;     (if mark-active
-                                        ;       (list (region-beginning) (region-end))
-                                        ;       (list (line-beginning-position) (line-beginning-position 2)))))
-
-                                        ; (defadvice kill-ring-save (before slick-copy activate compile)
-                                        ;   "When called interactively with no active region, copy a single line instead."
-                                        ;   (interactive
-                                        ;     (if mark-active
-                                        ;       (list (region-beginning) (region-end))
-                                        ;       (message "Copied line")
-                                        ;       (setq my-visual-line-selected t)
-                                        ;       (list (line-beginning-position) (line-beginning-position 2)))))
-
 ;;; ===================================================================
 ;;; NAVIGATION & SEARCH
 ;;; ===================================================================
@@ -675,21 +658,21 @@
   '(sideline-flymake-warning ((t (:inherit nil :background "lightyellow" :foreground "black"))))
   '(success ((t (:foreground "Green1" :weight regular))))
   '(symbol-overlay-default-face ((t (:inherit my-highlight-font-words-face))))
-  '(tab-bar ((t (:background "#1e1e1e" :height 140))))
+  '(tab-bar ((t (:background "#1e1e1e" :height 120))))
   '(tab-bar-tab ((t (:foreground "black" :background "yellow" :box (:line-width 2 :color "yellow" :style flat-button)))))
   '(tooltip ((t (:font "IBM Plex Mono-14.0" :box nil))))
-  '(treemacs-directory-collapsed-face ((t (:family "IBM Plex Mono" :weight normal :height 140 :underline nil :inherit unspecified :foreground "#57D8D4"))))
-  '(treemacs-directory-face ((t (:family "IBM Plex Mono" :weight normal :height 140 :underline nil :inherit unspecified :foreground "#57D8D4"))))
-  '(treemacs-file-face ((t (:family "IBM Plex Mono" :weight normal :height 140 :underline nil :inherit unspecified :foreground "#C6B8AD"))))
-  '(treemacs-git-added-face ((t (:family "IBM Plex Mono" :weight normal :height 140 :underline nil :inherit unspecified :foreground "#C6B8AD"))))
-  '(treemacs-git-conflict-face ((t (:family "IBM Plex Mono" :weight normal :height 140 :underline nil :inherit unspecified :foreground "#C6B8AD"))))
-  '(treemacs-git-ignored-face ((t (:family "IBM Plex Mono" :weight normal :height 140 :underline nil :inherit unspecified :foreground "#C6B8AD"))))
-  '(treemacs-git-modified-face ((t (:family "IBM Plex Mono" :weight normal :height 140 :underline nil :inherit unspecified :foreground "#D0BF68"))))
-  '(treemacs-git-renamed-face ((t (:family "IBM Plex Mono" :weight normal :height 140 :underline nil :inherit unspecified :foreground "#C6B8AD"))))
-  '(treemacs-git-unmodified-face ((t (:family "IBM Plex Mono" :weight normal :height 140 :underline nil :inherit unspecified :foreground "#C6B8AD"))))
-  '(treemacs-git-untracked-face ((t (:family "IBM Plex Mono" :weight normal :height 140 :underline nil :inherit unspecified :foreground "#C6B8AD"))))
-  '(treemacs-root-face ((t (:family "IBM Plex Mono" :weight normal :height 140 :underline nil :inherit unspecified :foreground "#57D8D4"))))
-  '(treemacs-tags-face ((t (:family "IBM Plex Mono" :weight normal :height 140 :underline nil :inherit unspecified :foreground "#C6B8AD"))))
+  '(treemacs-directory-collapsed-face ((t (:family "IBM Plex Mono" :weight normal :height 120 :underline nil :inherit unspecified :foreground "#57D8D4"))))
+  '(treemacs-directory-face ((t (:family "IBM Plex Mono" :weight normal :height 120 :underline nil :inherit unspecified :foreground "#57D8D4"))))
+  '(treemacs-file-face ((t (:family "IBM Plex Mono" :weight normal :height 120 :underline nil :inherit unspecified :foreground "#C6B8AD"))))
+  '(treemacs-git-added-face ((t (:family "IBM Plex Mono" :weight normal :height 120 :underline nil :inherit unspecified :foreground "#C6B8AD"))))
+  '(treemacs-git-conflict-face ((t (:family "IBM Plex Mono" :weight normal :height 120 :underline nil :inherit unspecified :foreground "#C6B8AD"))))
+  '(treemacs-git-ignored-face ((t (:family "IBM Plex Mono" :weight normal :height 120 :underline nil :inherit unspecified :foreground "#C6B8AD"))))
+  '(treemacs-git-modified-face ((t (:family "IBM Plex Mono" :weight normal :height 120 :underline nil :inherit unspecified :foreground "#D0BF68"))))
+  '(treemacs-git-renamed-face ((t (:family "IBM Plex Mono" :weight normal :height 120 :underline nil :inherit unspecified :foreground "#C6B8AD"))))
+  '(treemacs-git-unmodified-face ((t (:family "IBM Plex Mono" :weight normal :height 120 :underline nil :inherit unspecified :foreground "#C6B8AD"))))
+  '(treemacs-git-untracked-face ((t (:family "IBM Plex Mono" :weight normal :height 120 :underline nil :inherit unspecified :foreground "#C6B8AD"))))
+  '(treemacs-root-face ((t (:family "IBM Plex Mono" :weight normal :height 120 :underline nil :inherit unspecified :foreground "#57D8D4"))))
+  '(treemacs-tags-face ((t (:family "IBM Plex Mono" :weight normal :height 120 :underline nil :inherit unspecified :foreground "#C6B8AD"))))
   '(vertical-border ((t (:inherit shadow :foreground "#569CD6"))))
   '(whitespace-tab ((t (:foreground unspecified :background unspecified :inherit shadow))))
   '(whitespace-trailing ((t (:foreground unspecified :background unspecified :inherit shadow))))

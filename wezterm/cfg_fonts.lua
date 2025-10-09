@@ -7,7 +7,7 @@ cfg.adjust_window_size_when_changing_font_size = false
 -- !! this one opens a separate win on first unknown glyph, stealing windows focus !!
 cfg.warn_about_missing_glyphs = false
 
-cfg.font_size = 14.5
+cfg.font_size = 12.5
 cfg.line_height = 1.1
 
 -- Makes FontAwesome's double-width glyphs display properly!
@@ -15,8 +15,8 @@ cfg.allow_square_glyphs_to_overflow_width = "WhenFollowedBySpace"
 
 
 cfg.font = wezterm.font_with_fallback{
+    { family = "DejaVuSansM Nerd Font" },
     { family = "IBM Plex Mono", weight = "Regular" },
-    { family = "DejavuSansMono Nerd Font" },
     { family = "Cascadia Mono PL", weight = "DemiLight" },
     { family = "冬青黑体简体中文", weight = "DemiLight" },
 }

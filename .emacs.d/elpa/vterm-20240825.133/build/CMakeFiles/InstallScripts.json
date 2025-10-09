@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"/home/nickelchen/.emacs.d/elpa/vterm-20240825.133/build/cmake_install.cmake"
+	],
+	"Parallel" : false
+}
