@@ -3,15 +3,20 @@
   :custom
   (treesit-font-lock-level 4) ;; skittles highlighting
   :mode (("\\.tsx\\'" . tsx-ts-mode)
-         ("\\.js\\'"  . typescript-ts-mode)
-         ("\\.mjs\\'" . typescript-ts-mode)
-         ("\\.mts\\'" . typescript-ts-mode)
-         ("\\.cjs\\'" . typescript-ts-mode)
-         ("\\.ts\\'"  . typescript-ts-mode)
-         ("\\.jsx\\'" . tsx-ts-mode)
-         ("\\.json\\'" .  json-ts-mode))
+          ("\\.js\\'"  . typescript-ts-mode)
+          ("\\.mjs\\'" . typescript-ts-mode)
+          ("\\.mts\\'" . typescript-ts-mode)
+          ("\\.cjs\\'" . typescript-ts-mode)
+          ("\\.ts\\'"  . typescript-ts-mode)
+          ("\\.jsx\\'" . tsx-ts-mode)
+          ("\\.json\\'" .  json-ts-mode)
+          ("\\.clj\\'" . clojure-ts-mode)
+          ("\\.cljs\\'" . clojure-ts-mode)
+          ("\\.cljc\\'" . clojure-ts-mode)
+          ("\\.edn\\'" . clojure-ts-mode))
   :init
   (push '(css-mode . css-ts-mode) major-mode-remap-alist)
+  (push '(clojure-mode . clojure-ts-mode) major-mode-remap-alist)
   (push '(sh-mode . bash-ts-mode) major-mode-remap-alist)
   (push '(python-mode . python-ts-mode) major-mode-remap-alist)
   (push '(js-json-mode . json-ts-mode) major-mode-remap-alist)
@@ -29,6 +34,8 @@
   ;; (setq treesit-extra-load-path `( ,(expand-file-name "~/.emacs.d/.local/tree-sitter-grammars") ))
   ;; (add-to-list 'treesit-language-source-alist
   ;;            '(mermaid "https://github.com/monaqa/tree-sitter-mermaid" "master"))
+  (add-to-list 'treesit-language-source-alist
+    '(go "https://github.com/tree-sitter/tree-sitter-go" "v0.19.1"))
   )
 
 

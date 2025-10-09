@@ -4,11 +4,14 @@ function M.setup()
   -- Enable filetype plugin and indent
   vim.cmd('filetype plugin indent on')
 
+  -- Load matchparen plugin
+  vim.cmd('runtime! plugin/matchparen.vim')
+
   -- File type settings
   vim.api.nvim_create_autocmd('FileType', {
-    pattern = 'qf',
-    command = 'wincmd J',
-    desc = 'Move quickfix window to bottom'
+      pattern = 'qf',
+      command = 'wincmd J',
+      desc = 'Move quickfix window to bottom'
   })
 
   -- JSON file types
@@ -140,7 +143,7 @@ function M.setup()
   -- Disable specific mappings for file tree types
   local tree_types = { 'vista', 'NvimTree' }
   local disabled_keys = { '<c-j>', '<c-i>', '<c-o>', '<c-h>', '<c-l>', '<c-e>', '<Leader>L', '<Leader>q', '<Leader>x', '<Leader>j' }
-  
+
   vim.api.nvim_create_autocmd('FileType', {
     pattern = tree_types,
     callback = function()
@@ -209,9 +212,9 @@ function M.setup()
   vim.api.nvim_create_autocmd('FileType', {
     pattern = { 'NvimTree', 'neo-tree', 'oil' },
     callback = function()
-      vim.keymap.set('n', '<leader>at', '<cmd>ClaudeCodeTreeAdd<cr>', { 
-        desc = 'Add file', 
-        buffer = true 
+      vim.keymap.set('n', '<leader>at', '<cmd>ClaudeCodeTreeAdd<cr>', {
+        desc = 'Add file',
+        buffer = true
       })
     end,
     desc = 'Set Claude Code keymaps for file trees'

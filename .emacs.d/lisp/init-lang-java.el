@@ -29,7 +29,134 @@
 (defvar java-google-style-formatter (file-name-concat java-local-dir "eclipse-java-google-style.xml"))
 
 ;; Java runtime configuration
-(defvar java-runtime-path "/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home")
+(defvar java-runtime-path
+  (or (getenv "JAVA_HOME")
+    (cond
+      ((eq system-type 'darwin)
+        (or (and (file-exists-p "/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home")
+              "/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home")
+          (and (file-exists-p "/usr/local/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home")
+            "/usr/local/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home")))
+      ((eq system-type 'gnu/linux)
+        (or (and (file-exists-p "/usr/lib/jvm/java-21-openjdk-amd64")
+              "/usr/lib/jvm/java-21-openjdk-amd64")
+          (and (file-exists-p "/usr/lib/jvm/java-21-openjdk")
+            "/usr/lib/jvm/java-21-openjdk")))))
+  "Java runtime path for JDT Language Server.")
+
+
+;; JUnit 版本
+(defvar java-junit-version "1.10.1"
+  "JUnit Platform Console Standalone version to download.")
+
+;; 下载 URL
+(defvar java-lombok-url "https://projectlombok.org/downloads/lombok.jar")
+(defvar java-junit-url-template "https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/%s/junit-platform-console-standalone-%s.jar")
+(defvar jdt-language-server-url "https://download.eclipse.org/jdtls/snapshots/jdt-language-server-latest.tar.gz")
+
+;;
+;; 下载方法和清理方法
+;;
+(defun java-setup-create-directories ()
+  "创建 Java 开发所需的所有目录。"
+  (interactive)
+  (dolist (dir (list java-lombok-dir
+                 java-test-runner-dir
+                 jdt-language-server-dir
+                 jdt-language-server-workspaces))
+    (unless (file-exists-p dir)
+      (make-directory dir t)
+      (message "Created directory: %s" dir))))
+
+(defun java-setup-download-file (url destination)
+  "从 URL 下载文件到 DESTINATION。"
+  (let ((download-buffer (url-retrieve-synchronously url t)))
+    (when download-buffer
+      (with-current-buffer download-buffer
+        (goto-char (point-min))
+        ;; 跳过 HTTP 头
+        (re-search-forward "^$" nil 'move)
+        (forward-char)
+        (delete-region (point-min) (point))
+        ;; 写入文件
+        (let ((coding-system-for-write 'binary))
+          (write-region (point-min) (point-max) destination))
+        (kill-buffer))
+      (message "Downloaded: %s" destination)
+      t)))
+
+(defun java-setup-download-lombok ()
+  "下载 Lombok JAR 文件。"
+  (interactive)
+  (java-setup-create-directories)
+  (if (file-exists-p java-lombok-jar)
+    (message "Lombok already exists: %s" java-lombok-jar)
+    (message "Downloading Lombok...")
+    (java-setup-download-file java-lombok-url java-lombok-jar)))
+
+(defun java-setup-download-junit ()
+  "下载 JUnit Platform Console Standalone JAR 文件。"
+  (interactive)
+  (java-setup-create-directories)
+  (if (file-exists-p java-junit-platform-console-standalone-jar)
+    (message "JUnit already exists: %s" java-junit-platform-console-standalone-jar)
+    (message "Downloading JUnit %s..." java-junit-version)
+    (let ((url (format java-junit-url-template java-junit-version java-junit-version)))
+      (java-setup-download-file url java-junit-platform-console-standalone-jar))))
+
+(defun java-setup-download-jdt-ls ()
+  "下载并解压 JDT Language Server。"
+  (interactive)
+  (java-setup-create-directories)
+  (let ((tar-file (file-name-concat jdt-language-server-dir "jdt-language-server-latest.tar.gz")))
+    (if (file-exists-p (file-name-concat jdt-language-server-dir "plugins"))
+      (message "JDT Language Server already exists: %s" jdt-language-server-dir)
+      (message "Downloading JDT Language Server...")
+      (when (java-setup-download-file jdt-language-server-url tar-file)
+        (message "Extracting JDT Language Server...")
+        (let ((default-directory jdt-language-server-dir))
+          (shell-command (format "tar -xzf %s" (shell-quote-argument tar-file))))
+        (delete-file tar-file)
+        (message "JDT Language Server installed successfully!")))))
+
+(defun java-setup-download-all ()
+  "下载所有 Java 开发所需的文件。"
+  (interactive)
+  (java-setup-download-lombok)
+  (java-setup-download-junit)
+  (java-setup-download-jdt-ls)
+  (message "Java setup complete!"))
+
+(defun java-setup-clean ()
+  "清理所有下载的 Java 开发文件（保留目录结构）。"
+  (interactive)
+  (when (yes-or-no-p "Remove downloaded Java setup files (Lombok, JUnit, JDT LS)? ")
+    (when (file-exists-p java-lombok-jar)
+      (delete-file java-lombok-jar)
+      (message "Removed: %s" java-lombok-jar))
+    (when (file-exists-p java-junit-platform-console-standalone-jar)
+      (delete-file java-junit-platform-console-standalone-jar)
+      (message "Removed: %s" java-junit-platform-console-standalone-jar))
+    (when (file-exists-p jdt-language-server-dir)
+      (delete-directory jdt-language-server-dir t)
+      (message "Removed: %s" jdt-language-server-dir))
+    (message "Java setup files cleaned!")))
+
+(defun java-setup-check ()
+  "检查 Java 开发环境是否已正确设置。"
+  (interactive)
+  (let ((files (list (cons "Lombok" java-lombok-jar)
+                 (cons "JUnit" java-junit-platform-console-standalone-jar)
+                 (cons "JDT LS plugins" (file-name-concat jdt-language-server-dir "plugins")))))
+    (message "Java Setup Status:")
+    (dolist (file files)
+      (message "  %s: %s"
+        (car file)
+        (if (file-exists-p (cdr file))
+          "✓ Installed"
+          "✗ Missing")))))
+
+
 
 ;; Helper function for jdtls contact
 (defun eglot-jdtls-contact (interactive)

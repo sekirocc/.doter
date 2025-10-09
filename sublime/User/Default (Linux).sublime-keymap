@@ -1,0 +1,39 @@
+[
+	// 基础编辑
+	{ "keys": ["super+c"], "command": "copy" },
+	{ "keys": ["super+v"], "command": "paste" },
+	{ "keys": ["super+x"], "command": "cut" },
+	{ "keys": ["super+z"], "command": "undo" },
+	{ "keys": ["super+shift+z"], "command": "redo" },
+	{ "keys": ["super+a"], "command": "select_all" },
+
+	// 标签页导航（Vim 风格：h=左，l=右）
+	{ "keys": ["super+h"], "command": "prev_view" },
+	{ "keys": ["super+l"], "command": "next_view" },
+
+	// 窗口与文件
+	{ "keys": ["super+w"], "command": "close_file" },
+	{ "keys": ["super+o"], "command": "prompt_open_file" },
+	{ "keys": ["super+s"], "command": "save" },
+	{ "keys": ["super+shift+s"], "command": "save_as" },
+
+	{ "keys": ["super+n"], "command": "new_file" },
+    { "keys": ["super+shift+n"], "command": "new_window" },
+
+	// 查找与替换（调整到更 macOS 风格）
+	{ "keys": ["super+f"], "command": "show_panel", "args": {"panel": "find"} },
+	{ "keys": ["super+shift+f"], "command": "show_panel", "args": {"panel": "replace"} },
+	{ "keys": ["super+g"], "command": "find_next" },
+	{ "keys": ["super+shift+g"], "command": "find_prev" },
+
+	// 选中与多光标
+	{ "keys": ["super+d"], "command": "find_under_expand" },
+	{ "keys": ["super+shift+l"], "command": "split_selection_into_lines" },
+
+	// 注释
+	{ "keys": ["super+/"], "command": "toggle_comment", "args": { "block": false } },
+	{ "keys": ["super+alt+/"], "command": "toggle_comment", "args": { "block": true } },
+
+	{ "keys": ["super+p"], "command": "show_overlay", "args": {"overlay": "goto", "text": ""} },
+    { "keys": ["super+shift+p"], "command": "show_overlay", "args": {"overlay": "command_palette"} }
+]

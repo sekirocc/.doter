@@ -29,7 +29,7 @@
 
   (defun my-add-padding-for-treemacs ()
     (set-window-margins (treemacs-get-local-window) 0 0)
-  )
+    )
 
   (defun dim-treemacs-window-background ()
     (set (make-local-variable 'face-remapping-alist) `((default :background ,darker-window-bg-color)
@@ -135,15 +135,15 @@ exists it returns /file/name_Copy2.ext etc."
   ;; 隐藏 python 的一些忽略文件
   ;;
   (defun my/treemacs-ignore-pycache-and-egg-info (file-name abs-path)
-  "Ignore __pycache__ directories and *.egg-info directories."
-  (or
-   ;; 忽略名为 __pycache__ 的目录
-   (string= file-name "__pycache__")
-   ;; 忽略以 .egg-info 结尾的目录
-   (string-suffix-p ".egg-info" file-name)
-   ;; 可选：忽略 .pyc 文件（如果你也想隐藏单个 .pyc）
-   ;; (string-suffix-p ".pyc" file-name)
-   ))
+    "Ignore __pycache__ directories and *.egg-info directories."
+    (or
+      ;; 忽略名为 __pycache__ 的目录
+      (string= file-name "__pycache__")
+      ;; 忽略以 .egg-info 结尾的目录
+      (string-suffix-p ".egg-info" file-name)
+      ;; 可选：忽略 .pyc 文件（如果你也想隐藏单个 .pyc）
+      ;; (string-suffix-p ".pyc" file-name)
+      ))
   (add-to-list 'treemacs-ignored-file-predicates #'my/treemacs-ignore-pycache-and-egg-info)
 
 
@@ -159,7 +159,7 @@ exists it returns /file/name_Copy2.ext etc."
   (add-hook 'treemacs-mode-hook #'dim-treemacs-window-background)
   (add-hook 'treemacs-mode-hook #'change-treemacs-hl-line-mode)
   (add-hook 'treemacs-mode-hook #'my-special-buffer-keys-minor-mode)
-  (add-hook 'treemacs-mode-hook #'my-set-large-line-height)
+  ;; (add-hook 'treemacs-mode-hook #'my-set-large-line-height)
   :bind
   (:map
     treemacs-mode-map
@@ -212,13 +212,12 @@ exists it returns /file/name_Copy2.ext etc."
     (treemacs-load-theme "Default")
     )
   ;;
-
-)
+  )
 
 
 (with-eval-after-load 'cfrs
   ;; CFRS face configuration moved to custom-set-faces
-)
+  )
 
 
 (defun my-treemacs-add-and-display-current-project ()

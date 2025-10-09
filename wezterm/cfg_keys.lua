@@ -23,7 +23,10 @@ cfg.keys = {
   { mods = "SUPER",             key = "f",  action = wezterm.action{Search = {CaseInSensitiveString = ""}}},
 
   { mods = "SUPER",             key = "c",  action = wezterm.action{CopyTo = "Clipboard"}},
-  { mods = "SUPER",             key = "v",  action = wezterm.action{PasteFrom = "Clipboard"}},
+  { mods = "SUPER",             key = "v",  action = wezterm.action.PasteFrom("Clipboard")},
+
+  { mods = "CTRL",              key = "Insert",  action = wezterm.action{CopyTo = "Clipboard"}},
+  { mods = "SHIFT",             key = "Insert",  action = wezterm.action.PasteFrom("Clipboard")},
 
   { mods = "SUPER|SHIFT",       key = "j",  action = wezterm.action.SendString '\x13\x0a'     }, -- cmd+shift+j  next session,  send C-s C-j
   { mods = "SUPER|SHIFT",       key = "k",  action = wezterm.action.SendString '\x13\x0b'     }, -- cmd+shift+k  next session,  send C-s C-k

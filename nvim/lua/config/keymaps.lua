@@ -11,6 +11,14 @@ end
 function M.setup()
   local keymap = vim.keymap.set
 
+  -- Enhanced paste mappings for Insert mode (using system clipboard)
+  -- This ensures clean paste from system clipboard, bypassing keyboard protocol issues
+  keymap("i", "<C-r>+", "<C-r><C-o>+", { noremap = true, desc = "Paste from clipboard (literal)" })
+  keymap("i", "<C-y>", "<C-r><C-o>+", { noremap = true, desc = "Paste from clipboard (literal)" })
+
+  -- Map common paste shortcuts in Normal mode to enter insert mode and paste
+  -- keymap("n", "<D-v>", '"+p', { noremap = true, desc = "Paste from clipboard" })  -- Super/Cmd+V in Normal mode
+
   -- AI/Claude Code keymaps are now handled by lazy.nvim in plugins/claudecode.lua
 
   -- Easymotion keymaps are now handled by lazy.nvim in plugins/editing.lua
@@ -157,7 +165,6 @@ function M.setup()
   -- Search and replace
   vim.api.nvim_set_keymap("v", "<C-r>", '"hy:%sno#<C-r>h##gc<left><left><left>', { noremap = true })
   vim.api.nvim_set_keymap("n", "S", ":%sno##g<LEFT><LEFT>", { noremap = true })
-  vim.api.nvim_set_keymap("i", "<C-y>", '<C-r>"', { noremap = true })
   vim.api.nvim_set_keymap("v", "//", 'y/<C-R>"<CR>"', { noremap = true })
 
   -- Command line emacs bindings

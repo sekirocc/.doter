@@ -18,16 +18,27 @@ setopt HIST_NO_STORE
 
 export GIT_PAGER=less
 
+export EDITOR=nvim
+
 
 alias vim="nvim"
-alias em="/Applications/Emacs.app/Contents/MacOS/Emacs -nw"
-alias ee="/Applications/Emacs.app/Contents/MacOS/Emacs"
+
+if [ -f /Applications/Emacs.app/Contents/MacOS/Emacs ]; then
+    alias em="/Applications/Emacs.app/Contents/MacOS/Emacs -nw"
+    alias ee="/Applications/Emacs.app/Contents/MacOS/Emacs"
+else
+    alias em="/usr/local/bin/emacs -nw"
+    alias ee="/usr/local/bin/emacs"
+fi
+
 alias emc="emacsclient"
 
 
 jdk() {
         version=$1
-        export JAVA_HOME=$(/usr/libexec/java_home -v"$version");
+        if [ -f /usr/libexec/java_home ]; then
+            export JAVA_HOME=$(/usr/libexec/java_home -v"$version");
+        fi
         java -version
 }
 jdk 21
@@ -56,7 +67,7 @@ loadconda(){
     source /opt/homebrew/Caskroom/miniconda/base/etc/profile.d/conda.sh
 }
 
-export DEVLOG="/Users/jiechen/work/code/cpp/dev/"
+export DEVLOG="$HOME/work/code/cpp/dev/"
 ssp() {
     local my_curr_dir=$(basename "$PWD")
     local my_logdev_dir="${DEVLOG}/cursor_chats/${my_curr_dir}"
@@ -271,8 +282,12 @@ export PATH="$HOME/platform-tools:$PATH"
 export VCPKG_ROOT="$HOME/vcpkg"
 
 
-source ~/perl5/perlbrew/etc/bashrc
+[ -f ~/perl5/perlbrew/etc/bashrc ] && source ~/perl5/perlbrew/etc/bashrc
 
 
+[ -f ~/.doter/zsh/.git_aliases ] && source ~/.doter/zsh/.git_aliases
+
+
+source <(fzf --zsh)
 
 alias ffplay="ffplay -vf \"drawtext=text='%{pts\:hms}':x=10:y=10:fontsize=32:fontcolor=yellow:box=1:boxcolor=red@0.8:boxborderw=10\" "

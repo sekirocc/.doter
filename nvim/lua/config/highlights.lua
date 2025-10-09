@@ -37,6 +37,8 @@ vim.cmd([[
   " LSP floating windows
   hi FloatBorder             guifg=#569CD6       guibg=NONE
   hi NormalFloat             guifg=white         guibg=#1e1e1e
+
+  hi MatchParen guifg=purple guibg=yellow
 ]])
 
 -- Create autocmd to reapply highlights when colorscheme changes

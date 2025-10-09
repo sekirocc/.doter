@@ -115,6 +115,7 @@
   (setq eglot-stay-out-of '(company))
   ;; Don't show indicator
   (setq eglot-code-action-indicator "")
+  (setq eglot-code-action-indications nil)
 
   ;; Performance and behavior settings
   (setq eglot-autoshutdown t
@@ -124,6 +125,7 @@
 
   ;; Disable inlay hints by default
   (add-hook 'eglot-managed-mode-hook (lambda () (eglot-inlay-hints-mode -1))))
+
 
 (use-package sideline
   :ensure t

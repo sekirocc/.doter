@@ -21,6 +21,7 @@ ln -s ~/.doter/alacritty        ~/.config/alacritty
 ln -s ~/.doter/karabiner        ~/.config/karabiner
 ln -s ~/.doter/kak              ~/.config/kak
 ln -s ~/.doter/git              ~/.config/git
+ln -s ~/.doter/sublime/User     ~/.config/sublime-text/Packages/User
 
 mkdir -p ~/.tabby
 cp ~/.doter/tabby/config.toml ~/.tabby/config.toml
@@ -33,7 +34,30 @@ cp ~/.doter/tabby/config.toml ~/.tabby/config.toml
 sudo apt install silversearcher-ag
 sudo apt install ripgrep
 sudo apt install fd-find
-sudo apt install xclip
+sudo apt install xclip wl-clipboard
+sudo apt install fonts-wqy-microhei
+
+
+# some dev tools
+sudo apt install flatpak
+sudo apt install nodejs
+sudo apt install apt-file
+sudo apt install hub
+sudo apt install ros
+sudo apt install npm
+sudo apt install golang
+sudo apt install openjdk-21-jdk
+sudo apt install mariadb-server
+sudo apt install cmake
+sudo apt install clang-19
+sudo apt install htop
+sudo apt install fonts-wqy-microhei
+curl -LsSf https://astral.sh/uv/install.sh | sh
+uv tool install basedpyright
+
+
+
+
 
 # or macOS
 brew install ripgrep ag fd
@@ -56,6 +80,35 @@ emacs in macOS, enlarge tooltip fonts.
 defaults write org.gnu.Emacs NSToolTipsFontSize -int 16
 ```
 
+#### emacs
+
+
+```bash
+# ubuntu
+sudo apt install texinfo
+sudo apt install libxpm-dev libjpeg-dev libgif-dev libtiff-dev libgnutls28-dev libpng-dev libtree-sitter-dev
+sudo apt install build-essential libgtk-3-dev libgnutls28-dev \
+    libncurses5-dev libxml2-dev libtiff5-dev libgif-dev libjpeg-dev \
+    libpng-dev librsvg2-dev libm17n-dev libotf-dev libjansson-dev \
+    libgccjit-12-dev texinfo autoconf libcairo2-dev
+
+git clone --depth=1 https://github.com/emacs-mirror/emacs.git
+cd emacs
+./autogen.sh
+./configure \
+    --with-pgtk \
+    --with-native-compilation=aot \
+    --with-json \
+    --with-cairo \
+    --without-imagemagick \
+    --without-x \
+    --without-xaw3d \
+    --prefix=/usr/local
+make -j8
+sudo make install
+
+
+```
 
 #### kak
 
@@ -68,21 +121,19 @@ sudo ln -s /bin/python3 /bin/python
 
 #### nvim
 
-install plug.vim
-
-```
-curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs \
-    https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-
-nvim +PlugInstall +qall
-
+# install neovim
+git clone https://github.com/neovim/neovim.git
+cd neovim
+make CMAKE_BUILD_TYPE=RelWithDebInfo
+sudo make install
 
 ```
 
 download patched-fonts
 
 ```
-wget "https://github.com/ryanoasis/nerd-fonts/blob/master/patched-fonts/DejaVuSansMono/Regular/complete/DejaVu%20Sans%20Mono%20Nerd%20Font%20Complete.ttf?raw=true" -O DejaVu-Sans-Mono-Nerd-Font-Complete.ttf
+wget "https://github.com/ryanoasis/nerd-fonts/raw/refs/heads/master/patched-fonts/DejaVuSansMono/Regular/DejaVuSansMNerdFontMono-Regular.ttf"
+wget "https://github.com/XuanXiaoming/Sarasa-Mono-SC-Nerd/raw/refs/heads/master/Sarasa-Mono-SC-Nerd.ttf"
 ```
 
 #### tmux

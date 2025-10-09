@@ -149,7 +149,7 @@ function M.setup()
   g.ctrlsf_backend = 'rg'
   g.ctrlsf_auto_focus = { at = "start" }
   g.ctrlsf_search_mode = 'async'
-  g.ctrlsf_extra_backend_args = { rg = '--no-ignore --hidden --glob "!.git" --glob "!backups"' }
+  g.ctrlsf_extra_backend_args = { rg = '--no-ignore --hidden --glob "!.git" --glob "!backups" --glob "!node_modules"' }
 
   -- Go settings
   g.go_imports_autosave = 1
