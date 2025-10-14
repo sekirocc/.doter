@@ -595,8 +595,12 @@ INPUT is the terminal output string."
 (defun claude-posframe-send-region (beg end)
   "Send the selected region to claude posframe."
   (interactive "r")
-  (let ((selection (buffer-substring-no-properties beg end)))
-    (claude-posframe-do-send-command (format "%s\n" selection))))
+  (let ((file-name (claude-posframe--get-buffer-file-name))
+         (selection (buffer-substring-no-properties beg end)))
+    (if file-name
+      (claude-posframe-do-send-command (format "@%s:%d-%d\n" file-name (line-number-at-pos beg) (line-number-at-pos end)))
+      (claude-posframe-do-send-command (format "%s\n" selection)))
+    ))
 
 
 (defun claude-posframe--get-buffer-file-name ()

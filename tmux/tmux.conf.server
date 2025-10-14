@@ -109,6 +109,15 @@ bind-key -T copy-mode-vi MouseDragEnd1Pane send -X copy-selection-no-clear
 # Copy & Paste
 # ---------------------
 
+
+# 按 prefix + y 保存当前的 pane 的内容
+bind y run 'tmux capture-pane -S - ; \
+            LOGFILE="/tmp/tmux-log-$(date +%Y%m%d-%H%M%S).txt"; \
+            tmux save-buffer "$LOGFILE"; \
+            tmux delete-buffer; \
+            tmux display-message -d 10000 "✅ 已保存日志到: $LOGFILE"'
+
+
 # ----------------------
 # set some pretty colors
 # ----------------------
