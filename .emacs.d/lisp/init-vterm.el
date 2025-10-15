@@ -50,6 +50,8 @@
     (refresh-current-mode))
 
   (add-hook 'vterm-copy-mode-hook #'my-toggle-legendary-buffer-for-vterm)
+  ;; run first time
+  (my-toggle-legendary-buffer-for-vterm)
   (keymap-unset vterm-mode-map "M-`")
   (keymap-unset vterm-mode-map "M-:")
 
