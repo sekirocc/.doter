@@ -185,7 +185,6 @@ exists it returns /file/name_Copy2.ext etc."
 
 
 (with-eval-after-load 'treemacs
-  (require 'treemacs-all-the-icons)
 
   ; (treemacs-create-theme "simple"
   ;   :config
@@ -207,7 +206,9 @@ exists it returns /file/name_Copy2.ext etc."
 
   ;; terminal mode use simple theme
   (if (display-graphic-p)
-    (treemacs-load-theme "all-the-icons")
+    (progn
+      (require 'treemacs-all-the-icons)
+      (treemacs-load-theme "all-the-icons"))
     (treemacs-load-theme "Default")
     )
   ;;
