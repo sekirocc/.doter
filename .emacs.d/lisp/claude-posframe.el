@@ -69,7 +69,7 @@
   :type 'float
   :group 'claude-posframe)
 
-(defcustom claude-posframe-border-width 2
+(defcustom claude-posframe-border-width 1
   "Border width of the posframe."
   :type 'integer
   :group 'claude-posframe)
@@ -227,7 +227,7 @@ between reducing flickering and maintaining responsiveness."
     (when (get-buffer-window (current-buffer))
       (let* ((fringe-width 6))  ; 固定6像素的 fringe
         (set-window-fringes (get-buffer-window (current-buffer))
-                           fringe-width fringe-width)
+          fringe-width fringe-width)
         (message "Claude posframe padding applied: fringe=%d" fringe-width)))
     ;; Use face-remap-add-relative for buffer-local face changes
     (face-remap-add-relative 'header-line
@@ -257,12 +257,12 @@ between reducing flickering and maintaining responsiveness."
   (interactive)
   (let ((buffer (get-buffer (claude-posframe--get-buffer-name))))
     (if buffer
-        (with-current-buffer buffer
-          (message "Header line: %s | Mode line: %s | Fringes: %s | Face remaps: %d"
-                   header-line-format
-                   mode-line-format
-                   (window-fringes (get-buffer-window buffer))
-                   (length face-remapping-alist)))
+      (with-current-buffer buffer
+        (message "Header line: %s | Mode line: %s | Fringes: %s | Face remaps: %d"
+          header-line-format
+          mode-line-format
+          (window-fringes (get-buffer-window buffer))
+          (length face-remapping-alist)))
       (message "Claude posframe buffer not found"))))
 
 ;;;###autoload
@@ -451,6 +451,7 @@ This function is deprecated. Use `claude-posframe-mode' instead."
                              (concat claude-posframe-shell " " (mapconcat #'identity switches " "))
                              claude-posframe-shell))
                (default-directory current-dir))
+          (message "vterm-shell: %s" vterm-shell)
           (condition-case err
             (progn
               (vterm-mode)
@@ -526,6 +527,7 @@ This fix come from: https://github.com/anthropics/claude-code/issues/247#issueco
               (kill-buffer buf)))
           buffer)))))
 
+;; copied from https://github.com/stevemolitor/claude-code.el/blob/main/claude-code.el#L1534  func claude-code--vterm-multiline-buffer-filter
 (defun claude-posframe--multiline-buffer-filter (orig-fun process input)
   "Buffer vterm output when it appears to be redrawing multi-line input.
 This prevents flickering when Claude redraws its input box as it expands
