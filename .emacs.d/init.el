@@ -79,7 +79,6 @@
 (add-to-list 'load-path (expand-file-name "~/.emacs.d/lisp/blink-search"))
 (add-to-list 'load-path (expand-file-name "~/.emacs.d/lisp/tabby.el"))
 (add-to-list 'load-path (expand-file-name "~/.emacs.d/lisp/initializers"))
-(add-to-list 'load-path (expand-file-name "~/.emacs.d/lisp/claudemacs"))
 (add-to-list 'custom-theme-load-path (expand-file-name "~/.emacs.d/lisp"))
 
 ;;; Core Libraries
@@ -571,6 +570,8 @@
   )
 ;; (use-package claudemacs
 ;;   :vc (:fetcher github :repo "cpoile/claudemacs"))
+
+(require 'claude-posframe)
 
 
 
