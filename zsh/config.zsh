@@ -48,6 +48,10 @@ hs() {
     hub sync
 }
 
+cl() {
+    claude --permission-mode  bypassPermissions
+}
+
 loadconda(){
     source /opt/homebrew/Caskroom/miniconda/base/etc/profile.d/conda.sh
 }
