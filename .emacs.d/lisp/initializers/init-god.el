@@ -84,6 +84,7 @@
                        "slime-mode"
                        "minibuffer-mode"
                        "eat-mode"
+                       "mistty-mode"
                        "inferior-python-mode"
                        "fundamental-mode"
                        "cnfonts-ui-mode"
@@ -151,7 +152,9 @@
 
 (defun my-god-should-enable-line-number-mode()
   "Check if line number mode should be enabled."
-  (not (derived-mode-p 'vterm-mode)))
+  (and
+    (not (derived-mode-p 'vterm-mode))
+    (not (derived-mode-p 'mistty-mode))))
 
 (setq should-not-display-dark-background-modes (list
                                                  "dired-mode"

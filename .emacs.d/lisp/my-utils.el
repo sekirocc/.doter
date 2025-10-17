@@ -1012,6 +1012,8 @@ If buffer-or-name is nil return current buffer's mode."
   (setenv "HTTPS_PROXY" "http://127.0.0.1:9910")
   (setenv "no_proxy" "localhost,127.0.0.1,::1,192.168.0.0/16,172.16.0.0/12,10.0.0.0/8,172.168.0.0/16")
   (setenv "NO_PROXY" "localhost,127.0.0.1,::1,192.168.0.0/16,172.16.0.0/12,10.0.0.0/8,172.168.0.0/16")
+  (setenv "ANTHROPIC_BASE_URL" "https://open.bigmodel.cn/api/anthropic")
+  (setenv "ANTHROPIC_AUTH_TOKEN" "60d4ebf1b2b740c3876a50b347f78c3e.Y2AGEmOGmX6qHwD0")
   )
 
 
