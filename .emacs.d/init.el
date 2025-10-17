@@ -572,6 +572,7 @@
 ;;   :vc (:fetcher github :repo "cpoile/claudemacs"))
 
 (require 'claude-posframe)
+(claude-posframe-mode 1)
 
 
 

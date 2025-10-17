@@ -19,6 +19,7 @@
 ;;; Dependencies
 (require 'cl-lib)
 (require 'mistty)
+(require 'posframe)
 
 
 ;;; Hack
@@ -97,10 +98,6 @@ doesn't support, such as a mouse event.."
   :type 'integer
   :group 'claude-posframe)
 
-(defcustom claude-posframe-auto-scroll t
-  "Whether to automatically scroll to bottom when showing posframe."
-  :type 'boolean
-  :group 'claude-posframe)
 
 (defcustom claude-posframe-working-directory nil
   "Working directory for the claude process."
@@ -119,19 +116,6 @@ doesn't support, such as a mouse event.."
 (defvar claude-posframe--project-buffer-map (make-hash-table :test 'equal)
   "Hash table mapping project names to their mistty buffer names.")
 
-(defvar claude-posframe--keymap nil
-  "Keymap for claude-posframe with higher priority.")
-
-(defvar claude-posframe--emulation-mode-map-alist
-  '((claude-posframe--keymap . t))
-  "Emulation mode map alist for claude-posframe to override mistty keymaps.")
-
-(defun claude-posframe--ensure-project-map ()
-  "Ensure the project buffer map is initialized."
-  (unless (and (boundp 'claude-posframe--project-buffer-map)
-               claude-posframe--project-buffer-map)
-    (setq claude-posframe--project-buffer-map (make-hash-table :test 'equal))))
-
 
 ;;; Utility Functions
 
@@ -145,18 +129,15 @@ doesn't support, such as a mouse event.."
 
 (defun claude-posframe--get-buffer-name-for-project (project-name)
   "Get the buffer name for a specific project from the map."
-  (claude-posframe--ensure-project-map)
   (gethash project-name claude-posframe--project-buffer-map))
 
 (defun claude-posframe--set-buffer-name-for-project (project-name buffer-name)
   "Set the buffer name for a specific project in the map."
-  (claude-posframe--ensure-project-map)
   (puthash project-name buffer-name claude-posframe--project-buffer-map))
 
 (defun claude-posframe-list-project-buffers ()
   "List all project buffers and their associated projects."
   (interactive)
-  (claude-posframe--ensure-project-map)
   (if (hash-table-empty-p claude-posframe--project-buffer-map)
       (message "No Claude posframe buffers found")
     (let ((projects '()))
@@ -174,7 +155,6 @@ doesn't support, such as a mouse event.."
 (defun claude-posframe-kill-all-buffers ()
   "Kill all Claude posframe buffers for all projects."
   (interactive)
-  (claude-posframe--ensure-project-map)
   (maphash (lambda (project-name buffer-name)
              (let ((buffer (get-buffer buffer-name)))
                (when (and buffer (buffer-live-p buffer))
@@ -234,18 +214,10 @@ This is useful for debugging or when the map gets corrupted."
                     (round (* (frame-height) claude-posframe-height-ratio)))))
     (list width height)))
 
-(defun claude-posframe--check-dependencies ()
-  "Check if required dependencies are available."
-  (require 'posframe)
-  (require 'mistty))
-
 ;;; Buffer Management
 
 (defun claude-posframe--get-buffer (&optional switches)
   "Get or create the claude buffer using mistty."
-  (unless (claude-posframe--check-dependencies)
-    (user-error "Required dependencies (posframe, mistty) are not available"))
-
   (let* ((project-name (claude-posframe--get-project-name))
          (buffer-name (claude-posframe--get-buffer-name-for-project project-name))
          (buffer (when buffer-name (get-buffer buffer-name)))
@@ -275,6 +247,11 @@ This is useful for debugging or when the map gets corrupted."
               (delete-window win))))))
     buffer))
 
+
+(defun claude-posframe--get-buffer-file-name ()
+  "Get the current buffer's file name."
+  (when buffer-file-name
+    (file-local-name (file-truename buffer-file-name))))
 
 ;;; Core Functions
 
@@ -327,73 +304,36 @@ This fix come from: https://github.com/anthropics/claude-code/issues/247#issueco
       :box nil
       :inherit 'default)))
 
-(defun claude-posframe--activate-mistty-mode ()
-  "Activate mistty mode and deactivate god-mode in the current buffer."
-  ;; Deactivate god-mode if it exists
-  (when (and (boundp 'god-mode) god-mode)
-    (god-mode -1))
-  ;; Activate terminal mode using mistty's key sequence
-  (mistty-send-key-sequence))
+(defun claude-posframe--set-buffer-terminal-input(buffer)
+  ;; Ensure mistty mode is activated in the posframe
+  (let ((windows (get-buffer-window-list buffer nil t)))
+    (when windows
+      (dolist (win windows)
+        (when (window-live-p win)
+          (with-selected-window win
+            (with-current-buffer buffer
+              (mistty-send-key-sequence)))))))
+  )
 
-(defun claude-posframe--activate-god-mode ()
-  "Activate god-mode and deactivate mistty mode in the current buffer."
-  ;; Activate god-mode if it exists
-  (when (boundp 'god-mode)
-    (god-mode 1)))
 
-(defun claude-posframe--ensure-scroll ()
+
+(defun claude-posframe--set-buffer-scroll-end (buffer)
   "Ensure the claude posframe scrolls to bottom."
-  (let* ((project-name (claude-posframe--get-project-name))
-         (buffer-name (claude-posframe--get-buffer-name-for-project project-name))
-         (buffer (when buffer-name (get-buffer buffer-name))))
-    (when (and buffer
-               (buffer-live-p buffer)
-               claude-posframe--posframe-visible)
-      (let ((windows (get-buffer-window-list buffer nil t)))
-        (when windows
-          (dolist (win windows)
-            (when (window-live-p win)
-              (with-selected-window win
-                (with-current-buffer buffer
-                  (goto-char (point-max))
-                  ;; When at bottom, activate mistty mode and deactivate god-mode
-                  (claude-posframe--activate-mistty-mode))
-                (recenter -1)))))))))
+  (let ((windows (get-buffer-window-list buffer nil t)))
+    (when windows
+      (dolist (win windows)
+        (when (window-live-p win)
+          (with-selected-window win
+            (with-current-buffer buffer
+              (goto-char (point-max))
+              ;; Scroll to bottom
+              (recenter -1))
+            (recenter -1)))))))
 
-;;;###autoload
-(defvar-local claude-posframe--last-mode-state nil
-  "Track the last mode state to avoid unnecessary switching.")
-
-(defun claude-posframe--check-scroll-position ()
-  "Check scroll position and switch modes accordingly."
-  (when claude-posframe--posframe-visible
-    (let* ((project-name (claude-posframe--get-project-name))
-           (buffer-name (claude-posframe--get-buffer-name-for-project project-name))
-           (buffer (when buffer-name (get-buffer buffer-name))))
-      (when (and buffer (buffer-live-p buffer))
-        (with-current-buffer buffer
-          ;; Always ensure our C-t keybinding is active
-          (local-set-key (kbd "C-t") #'claude-posframe-toggle)
-
-          (let* ((current-pos (point))
-                 (buffer-end (point-max))
-                 (threshold 10) ; 10 characters from bottom to consider "at bottom"
-                 (at-bottom (>= (- buffer-end current-pos) threshold))
-                 (new-state (if at-bottom 'mistty 'god)))
-            ;; Only switch modes if the state actually changed
-            (unless (eq new-state claude-posframe--last-mode-state)
-              (setq claude-posframe--last-mode-state new-state)
-              (if (eq new-state 'mistty)
-                  ;; At bottom: activate mistty mode and deactivate god-mode
-                  (claude-posframe--activate-mistty-mode)
-                ;; Not at bottom: activate god-mode
-                (claude-posframe--activate-god-mode)))))))))
 
 (defun claude-posframe-show (&optional switches)
   "Show the claude posframe."
   (interactive)
-  (unless (claude-posframe--check-dependencies)
-    (user-error "Required dependencies (posframe) are not available"))
   (let* ((buffer (claude-posframe--get-buffer switches))
          (dimensions (claude-posframe--calculate-dimensions))
          (width (car dimensions))
@@ -407,8 +347,7 @@ This fix come from: https://github.com/anthropics/claude-code/issues/247#issueco
       :position (point)
       :width width
       :height height
-      :window-point (when claude-posframe-auto-scroll
-                      (with-current-buffer buffer (point-max)))
+      :window-point (with-current-buffer buffer (point-max))
       :border-width claude-posframe-border-width
       :border-color claude-posframe-border-color
       :poshandler (claude-posframe--get-position-handler)
@@ -420,27 +359,9 @@ This fix come from: https://github.com/anthropics/claude-code/issues/247#issueco
     (run-with-timer 0.01 nil
       (lambda ()
         (claude-posframe--set-buffer-padding buffer)
-        ;; Ensure mistty mode is activated in the posframe
-        (let ((windows (get-buffer-window-list buffer nil t)))
-          (when windows
-            (dolist (win windows)
-              (when (window-live-p win)
-                (with-selected-window win
-                  (with-current-buffer buffer
-                    ;; Activate terminal mode using mistty's key sequence
-                    (mistty-send-key-sequence)))))))))
-
-    ;; Add scroll and movement detection hooks and initialize state
-    (with-current-buffer buffer
-      (setq claude-posframe--last-mode-state 'mistty) ; Start with mistty mode
-      (add-hook 'window-scroll-functions #'claude-posframe--check-scroll-position nil t)
-      (add-hook 'post-command-hook #'claude-posframe--check-scroll-position nil t)
-
-      ;; Set up C-t keybinding for hiding posframe
-      (local-set-key (kbd "C-t") #'claude-posframe-toggle))
-
-    (when claude-posframe-auto-scroll
-      (claude-posframe--ensure-scroll))
+        (claude-posframe--set-buffer-terminal-input buffer)
+        (claude-posframe--set-buffer-scroll-end buffer)
+        ))
 
     ;; Mark posframe as visible
     (setq claude-posframe--posframe-visible t)
@@ -454,10 +375,6 @@ This fix come from: https://github.com/anthropics/claude-code/issues/247#issueco
          (buffer-name (claude-posframe--get-buffer-name-for-project project-name))
          (buffer (when buffer-name (get-buffer buffer-name))))
     (when (and buffer (buffer-live-p buffer))
-      ;; Remove scroll and movement detection hooks
-      (with-current-buffer buffer
-        (remove-hook 'window-scroll-functions #'claude-posframe--check-scroll-position t)
-        (remove-hook 'post-command-hook #'claude-posframe--check-scroll-position t))
       (posframe-hide buffer)
       ;; Mark posframe as hidden
       (setq claude-posframe--posframe-visible nil)
@@ -535,11 +452,6 @@ With prefix argument ARG (C-u), start Claude with bypassed permissions."
         (claude-posframe-do-send-command (format "@%s:%d-%d" file-name (line-number-at-pos beg) (line-number-at-pos end)))
       (claude-posframe-do-send-command selection))))
 
-(defun claude-posframe--get-buffer-file-name ()
-  "Get the current buffer's file name."
-  (when buffer-file-name
-    (file-local-name (file-truename buffer-file-name))))
-
 (defun claude-posframe-send-buffer-file ()
   "Send the current buffer's file to Claude."
   (interactive)
@@ -580,14 +492,6 @@ With prefix argument ARG (C-u), start Claude with bypassed permissions."
   claude-posframe-mode
   (lambda () (claude-posframe-mode 1))
   :group 'claude-posframe)
-
-;;;###autoload
-(defun claude-posframe-setup-keybindings ()
-  "Set up default keybindings for claude-posframe.
-This function is deprecated. Use `claude-posframe-mode' instead."
-  (interactive)
-  (claude-posframe-mode 1)
-  (message "Claude posframe keybindings set up (consider using claude-posframe-mode instead)"))
 
 ;;; Cleanup
 
