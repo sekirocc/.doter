@@ -443,9 +443,6 @@ With prefix argument ARG (C-u), start Claude with bypassed permissions."
 (defun claude-posframe-send-region (beg end)
   "Send the selected region to claude posframe."
   (interactive "r")
-  ;; Validate region bounds
-  (when (or (< beg (point-min)) (> end (point-max)) (< end beg))
-    (user-error "Invalid region bounds"))
   (let ((file-name (claude-posframe--get-buffer-file-name))
         (selection (buffer-substring-no-properties beg end)))
     (if file-name
