@@ -38,7 +38,7 @@ doesn't support, such as a mouse event.."
          (setq key
                (read-key "Sending all KEYS to terminal... Exit with C-g."
                          'inherit-input-method))
-         (not (eq key ?\C-t))
+         (not (eq key ?\C-t))   ;;;;;;;  add by bellt
          (not (eq key ?\C-g)))
       (pcase key
         (`(xterm-paste ,str)
