@@ -33,17 +33,17 @@ doesn't support, such as a mouse event.."
   (interactive)
   (mistty--require-proc)
   (let ((proc mistty-proc)
-        key)
+         key)
     (while
-        (and
-         (setq key
-               (read-key "Sending all KEYS to terminal... Exit with C-g."
-                         'inherit-input-method))
-         (not (eq key ?\C-t))   ;;;;;;;  add by bellt
-         (not (eq key ?\C-g)))
+      (and
+        (setq key
+          (read-key "Sending all KEYS to terminal... Exit with C-g."
+            'inherit-input-method))
+        (not (eq key ?\C-t))   ;;;;;;;  add by bellt
+        (not (eq key ?\C-g)))
       (pcase key
         (`(xterm-paste ,str)
-         (mistty--send-string proc (mistty--maybe-bracketed-str str)))
+          (mistty--send-string proc (mistty--maybe-bracketed-str str)))
         (_ (mistty-send-key 1 (make-vector 1 key)))))))
 
 
@@ -122,8 +122,8 @@ doesn't support, such as a mouse event.."
 (defun claude-posframe--get-project-name ()
   "Get a unique project name for the current directory."
   (let ((project-dir (or claude-posframe-working-directory
-                        (claude-posframe--get-project-directory)
-                        (expand-file-name "~"))))
+                       (claude-posframe--get-project-directory)
+                       (expand-file-name "~"))))
     ;; Use the directory name as project identifier
     (file-name-nondirectory (directory-file-name project-dir))))
 
@@ -139,18 +139,18 @@ doesn't support, such as a mouse event.."
   "List all project buffers and their associated projects."
   (interactive)
   (if (hash-table-empty-p claude-posframe--project-buffer-map)
-      (message "No Claude posframe buffers found")
+    (message "No Claude posframe buffers found")
     (let ((projects '()))
       (maphash (lambda (project-name buffer-name)
                  (push (list project-name buffer-name (get-buffer buffer-name)) projects))
-               claude-posframe--project-buffer-map)
+        claude-posframe--project-buffer-map)
       (message "Claude posframe buffers:\n%s"
-               (mapconcat (lambda (info)
-                            (format "  %s -> %s %s"
-                                    (car info)
-                                    (cadr info)
-                                    (if (caddr info) "(live)" "(dead)")))
-                          projects "\n")))))
+        (mapconcat (lambda (info)
+                     (format "  %s -> %s %s"
+                       (car info)
+                       (cadr info)
+                       (if (caddr info) "(live)" "(dead)")))
+          projects "\n")))))
 
 (defun claude-posframe-kill-all-buffers ()
   "Kill all Claude posframe buffers for all projects."
@@ -164,7 +164,7 @@ doesn't support, such as a mouse event.."
                        (kill-process proc))))
                  (posframe-hide buffer)
                  (kill-buffer buffer))))
-           claude-posframe--project-buffer-map)
+    claude-posframe--project-buffer-map)
   (clrhash claude-posframe--project-buffer-map)
   (message "All Claude posframe buffers killed"))
 
@@ -190,28 +190,28 @@ This is useful for debugging or when the map gets corrupted."
 (defun claude-posframe--get-project-directory ()
   "Get the project root directory, trying multiple methods."
   (or
-   ;; Try projectile if available
-   (when (and (bound-and-true-p projectile-mode)
-               (fboundp 'projectile-project-root))
-     (ignore-errors (projectile-project-root)))
-   ;; Try project.el if available
-   (when (fboundp 'project-current)
-     (when-let* ((project (project-current)))
-       (if (fboundp 'project-root)
-           (project-root project)
-         (car (project-roots project)))))
-   ;; Try vc as fallback
-   (when (fboundp 'vc-root-dir)
-     (ignore-errors (vc-root-dir)))
-   ;; Fallback to current directory
-   default-directory))
+    ;; Try projectile if available
+    (when (and (bound-and-true-p projectile-mode)
+            (fboundp 'projectile-project-root))
+      (ignore-errors (projectile-project-root)))
+    ;; Try project.el if available
+    (when (fboundp 'project-current)
+      (when-let* ((project (project-current)))
+        (if (fboundp 'project-root)
+          (project-root project)
+          (car (project-roots project)))))
+    ;; Try vc as fallback
+    (when (fboundp 'vc-root-dir)
+      (ignore-errors (vc-root-dir)))
+    ;; Fallback to current directory
+    default-directory))
 
 (defun claude-posframe--calculate-dimensions ()
   "Calculate posframe dimensions with minimum constraints."
   (let ((width (max claude-posframe-min-width
-                   (round (* (frame-width) claude-posframe-width-ratio))))
-        (height (max claude-posframe-min-height
-                    (round (* (frame-height) claude-posframe-height-ratio)))))
+                 (round (* (frame-width) claude-posframe-width-ratio))))
+         (height (max claude-posframe-min-height
+                   (round (* (frame-height) claude-posframe-height-ratio)))))
     (list width height)))
 
 ;;; Buffer Management
@@ -219,24 +219,24 @@ This is useful for debugging or when the map gets corrupted."
 (defun claude-posframe--get-buffer (&optional switches)
   "Get or create the claude buffer using mistty."
   (let* ((project-name (claude-posframe--get-project-name))
-         (buffer-name (claude-posframe--get-buffer-name-for-project project-name))
-         (buffer (when buffer-name (get-buffer buffer-name)))
-         (current-dir (or claude-posframe-working-directory
-                        (claude-posframe--get-project-directory)
-                        (expand-file-name "~"))))
+          (buffer-name (claude-posframe--get-buffer-name-for-project project-name))
+          (buffer (when buffer-name (get-buffer buffer-name)))
+          (current-dir (or claude-posframe-working-directory
+                         (claude-posframe--get-project-directory)
+                         (expand-file-name "~"))))
 
     ;; Create buffer if it doesn't exist
     (unless buffer
       (setq buffer (condition-case err
-                       (let ((default-directory current-dir))
-                         (save-excursion
-                           (save-window-excursion
-                             (if switches
-                                 (mistty-create (append (list claude-posframe-shell) switches))
-                               (mistty-create claude-posframe-shell)))))
+                     (let ((default-directory current-dir))
+                       (save-excursion
+                         (save-window-excursion
+                           (if switches
+                             (mistty-create (append (list claude-posframe-shell) switches))
+                             (mistty-create claude-posframe-shell)))))
                      (error
-                      (message "Failed to start Claude mistty: %s" (error-message-string err))
-                      (user-error "Could not start Claude terminal"))))
+                       (message "Failed to start Claude mistty: %s" (error-message-string err))
+                       (user-error "Could not start Claude terminal"))))
       ;; Store the actual buffer name created by mistty
       (when buffer
         (claude-posframe--set-buffer-name-for-project project-name (buffer-name buffer))
@@ -335,9 +335,9 @@ This fix come from: https://github.com/anthropics/claude-code/issues/247#issueco
   "Show the claude posframe."
   (interactive)
   (let* ((buffer (claude-posframe--get-buffer switches))
-         (dimensions (claude-posframe--calculate-dimensions))
-         (width (car dimensions))
-         (height (cadr dimensions)))
+          (dimensions (claude-posframe--calculate-dimensions))
+          (width (car dimensions))
+          (height (cadr dimensions)))
 
     ;; Store current frame for focus restoration
     (setq claude-posframe--parent-frame (selected-frame))
@@ -372,15 +372,15 @@ This fix come from: https://github.com/anthropics/claude-code/issues/247#issueco
   "Hide the claude posframe."
   (interactive)
   (let* ((project-name (claude-posframe--get-project-name))
-         (buffer-name (claude-posframe--get-buffer-name-for-project project-name))
-         (buffer (when buffer-name (get-buffer buffer-name))))
+          (buffer-name (claude-posframe--get-buffer-name-for-project project-name))
+          (buffer (when buffer-name (get-buffer buffer-name))))
     (when (and buffer (buffer-live-p buffer))
       (posframe-hide buffer)
       ;; Mark posframe as hidden
       (setq claude-posframe--posframe-visible nil)
       ;; Restore focus to parent frame
       (when (and claude-posframe--parent-frame
-                  (frame-live-p claude-posframe--parent-frame))
+              (frame-live-p claude-posframe--parent-frame))
         (select-frame-set-input-focus claude-posframe--parent-frame))
       (run-hooks 'claude-posframe-hide-hook))))
 
@@ -396,7 +396,7 @@ With prefix argument ARG (C-u), start Claude with bypassed permissions."
   (let ((switches (when (equal arg '(4))
                     '("--permission-mode" "bypassPermissions"))))
     (if (claude-posframe-visible-p)
-        (claude-posframe-hide)
+      (claude-posframe-hide)
       (claude-posframe-show switches))))
 
 ;;;###autoload
@@ -404,8 +404,8 @@ With prefix argument ARG (C-u), start Claude with bypassed permissions."
   "Kill the claude posframe buffer."
   (interactive)
   (let* ((project-name (claude-posframe--get-project-name))
-         (buffer-name (claude-posframe--get-buffer-name-for-project project-name))
-         (buffer (when buffer-name (get-buffer buffer-name))))
+          (buffer-name (claude-posframe--get-buffer-name-for-project project-name))
+          (buffer (when buffer-name (get-buffer buffer-name))))
     (when (and buffer (buffer-live-p buffer))
       (claude-posframe-hide)
       ;; Kill the mistty process if it exists
@@ -444,9 +444,9 @@ With prefix argument ARG (C-u), start Claude with bypassed permissions."
   "Send the selected region to claude posframe."
   (interactive "r")
   (let ((file-name (claude-posframe--get-buffer-file-name))
-        (selection (buffer-substring-no-properties beg end)))
+         (selection (buffer-substring-no-properties beg end)))
     (if file-name
-        (claude-posframe-do-send-command (format "@%s:%d-%d" file-name (line-number-at-pos beg) (line-number-at-pos end)))
+      (claude-posframe-do-send-command (format "@%s:%d-%d" file-name (line-number-at-pos beg) (line-number-at-pos end)))
       (claude-posframe-do-send-command selection))))
 
 (defun claude-posframe-send-buffer-file ()
@@ -454,7 +454,7 @@ With prefix argument ARG (C-u), start Claude with bypassed permissions."
   (interactive)
   (let ((filename (claude-posframe--get-buffer-file-name)))
     (if filename
-        (claude-posframe-do-send-command (format "@%s " filename))
+      (claude-posframe-do-send-command (format "@%s " filename))
       (message "Current buffer is not visiting a file"))))
 
 ;;; Minor Mode
@@ -481,7 +481,7 @@ With prefix argument ARG (C-u), start Claude with bypassed permissions."
   :keymap claude-posframe-mode-map
   :group 'claude-posframe
   (if claude-posframe-mode
-      (message "Claude posframe mode enabled")
+    (message "Claude posframe mode enabled")
     (message "Claude posframe mode disabled")))
 
 ;;;###autoload
@@ -506,7 +506,7 @@ With prefix argument ARG (C-u), start Claude with bypassed permissions."
                          (kill-process proc))))
                    (posframe-hide buffer)
                    (kill-buffer buffer))))
-             claude-posframe--project-buffer-map)
+      claude-posframe--project-buffer-map)
     ;; Clear the project map
     (clrhash claude-posframe--project-buffer-map)))
 
