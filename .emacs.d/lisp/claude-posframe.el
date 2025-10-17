@@ -127,13 +127,28 @@ doesn't support, such as a mouse event.."
     ;; Use the directory name as project identifier
     (file-name-nondirectory (directory-file-name project-dir))))
 
-(defun claude-posframe--get-buffer-name-for-project (project-name)
-  "Get the buffer name for a specific project from the map."
-  (gethash project-name claude-posframe--project-buffer-map))
-
-(defun claude-posframe--set-buffer-name-for-project (project-name buffer-name)
-  "Set the buffer name for a specific project in the map."
-  (puthash project-name buffer-name claude-posframe--project-buffer-map))
+(defun claude-posframe--get-or-create-buffer (project-name)
+  "Get or create buffer for PROJECT-NAME."
+  (or (gethash project-name claude-posframe--project-buffer-map)
+      (puthash project-name
+              (when-let* ((current-dir (or claude-posframe-working-directory
+                                           (claude-posframe--get-project-directory)
+                                           (expand-file-name "~")))
+                          (buffer (condition-case err
+                                     (let ((default-directory current-dir))
+                                       (save-excursion
+                                         (save-window-excursion
+                                           (mistty-create claude-posframe-shell))))
+                                   (error
+                                     (message "Failed to start Claude mistty: %s" (error-message-string err))
+                                     nil))))
+                ;; Ensure buffer is not displayed in any window
+                (let ((windows (get-buffer-window-list buffer)))
+                  (dolist (win windows)
+                    (when (window-live-p win)
+                      (delete-window win))))
+                buffer)
+              claude-posframe--project-buffer-map)))
 
 (defun claude-posframe-list-project-buffers ()
   "List all project buffers and their associated projects."
@@ -171,8 +186,7 @@ doesn't support, such as a mouse event.."
   "Reset the project buffer map.
 This is useful for debugging or when the map gets corrupted."
   (interactive)
-  (when claude-posframe--project-buffer-map
-    (claude-posframe-kill-all-buffers))
+  (claude-posframe-kill-all-buffers)
   (setq claude-posframe--project-buffer-map nil)
   (message "Claude posframe project map reset"))
 
@@ -218,33 +232,28 @@ This is useful for debugging or when the map gets corrupted."
 (defun claude-posframe--get-buffer (&optional switches)
   "Get or create the claude buffer using mistty."
   (let* ((project-name (claude-posframe--get-project-name))
-          (buffer-name (claude-posframe--get-buffer-name-for-project project-name))
-          (buffer (when buffer-name (get-buffer buffer-name)))
-          (current-dir (or claude-posframe-working-directory
-                         (claude-posframe--get-project-directory)
-                         (expand-file-name "~"))))
+         (buffer (gethash project-name claude-posframe--project-buffer-map))
+         (current-dir (or claude-posframe-working-directory
+                        (claude-posframe--get-project-directory)
+                        (expand-file-name "~"))))
 
-    ;; Create buffer if it doesn't exist
-    (unless buffer
-      (setq buffer (condition-case err
-                     (let ((default-directory current-dir))
-                       (save-excursion
-                         (save-window-excursion
-                           (if switches
-                             (mistty-create (append (list claude-posframe-shell) switches))
-                             (mistty-create claude-posframe-shell)))))
-                     (error
-                       (message "Failed to start Claude mistty: %s" (error-message-string err))
-                       (user-error "Could not start Claude terminal"))))
-      ;; Store the actual buffer name created by mistty
-      (when buffer
-        (claude-posframe--set-buffer-name-for-project project-name (buffer-name buffer))
-        ;; Ensure the buffer is not displayed in any window
-        (let ((windows (get-buffer-window-list buffer)))
-          (dolist (win windows)
+    (or (and buffer (buffer-live-p buffer) buffer)
+        (when-let* ((new-buffer (condition-case err
+                                  (let ((default-directory current-dir))
+                                    (save-excursion
+                                      (save-window-excursion
+                                        (if switches
+                                          (mistty-create (append (list claude-posframe-shell) switches))
+                                          (mistty-create claude-posframe-shell))))))
+                                (error
+                                  (message "Failed to start Claude mistty: %s" (error-message-string err))
+                                  (user-error "Could not start Claude terminal")))))
+          ;; Store buffer and hide from windows
+          (puthash project-name (buffer-name new-buffer) claude-posframe--project-buffer-map)
+          (dolist (win (get-buffer-window-list new-buffer))
             (when (window-live-p win)
-              (delete-window win))))))
-    buffer))
+              (delete-window win)))
+          new-buffer))))
 
 
 (defun claude-posframe--get-buffer-file-name ()
@@ -404,14 +413,13 @@ With prefix argument ARG (C-u), start Claude with bypassed permissions."
   (interactive)
   (let* ((project-name (claude-posframe--get-project-name))
           (buffer-name (claude-posframe--get-buffer-name-for-project project-name))
-          (buffer (when buffer-name (get-buffer buffer-name))))
-    (when (and buffer (buffer-live-p buffer))
+          (buffer (when buffer-name (get-buffer buffer-name)))
+          (proc (when buffer (get-buffer-process buffer))))
+    (when (mistty-live-buffer-p buffer)
       (claude-posframe-hide)
       ;; Kill the mistty process if it exists
-      (when (and (mistty-buffer-p buffer) (mistty-live-buffer-p buffer))
-        (let ((proc (get-buffer-process buffer)))
-          (when (and proc (process-live-p proc))
-            (kill-process proc))))
+      (when (process-live-p proc)
+        (kill-process proc))
       (kill-buffer buffer)
       ;; Remove from project map
       (when claude-posframe--project-buffer-map
@@ -494,19 +502,18 @@ With prefix argument ARG (C-u), start Claude with bypassed permissions."
 (defun claude-posframe--cleanup ()
   "Clean up claude posframe resources."
   ;; Clean up all buffers tracked in the project map
+  (maphash (lambda (project-name buffer-name)
+             (let* ((buffer (get-buffer buffer-name))
+                    (proc (get-buffer-process buffer)))
+               (when (mistty-live-buffer-p buffer)
+                 ;; Kill mistty process if it exists
+                 (when (process-live-p proc)
+                   (kill-process proc))
+                 (posframe-hide buffer)
+                 (kill-buffer buffer))))
+    claude-posframe--project-buffer-map)
+  ;; Clear the project map
   (when claude-posframe--project-buffer-map
-    (maphash (lambda (project-name buffer-name)
-               (let ((buffer (get-buffer buffer-name)))
-                 (when (and buffer (buffer-live-p buffer) (mistty-buffer-p buffer))
-                   ;; Kill mistty process if it exists
-                   (when (mistty-live-buffer-p buffer)
-                     (let ((proc (get-buffer-process buffer)))
-                       (when (and proc (process-live-p proc))
-                         (kill-process proc))))
-                   (posframe-hide buffer)
-                   (kill-buffer buffer))))
-      claude-posframe--project-buffer-map)
-    ;; Clear the project map
     (clrhash claude-posframe--project-buffer-map)))
 
 ;; Register cleanup on Emacs exit
