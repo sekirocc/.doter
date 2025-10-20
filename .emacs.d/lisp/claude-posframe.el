@@ -286,13 +286,13 @@ between reducing flickering and maintaining responsiveness."
       :border-width claude-posframe-border-width
       :border-color claude-posframe-border-color
       :poshandler (claude-posframe--get-position-handler)
-      :respect-header-line t
-      :respect-mode-line t
+      ;; :respect-header-line t
+      ;; :respect-mode-line t
       :accept-focus t)
     ;; Apply padding after posframe is fully displayed
-    (run-with-timer 0.01 nil
-      (lambda ()
-        (claude-posframe--set-buffer-padding buffer)))
+    ;; (run-with-timer 0.01 nil
+    ;;   (lambda ()
+    ;;     (claude-posframe--set-buffer-padding buffer)))
     (when claude-posframe-auto-scroll
       (claude-posframe--ensure-scroll))
     (run-hooks 'claude-posframe-show-hook)))

@@ -206,14 +206,14 @@ function M.setup()
   })
 
   local capabilities = require('cmp_nvim_lsp').default_capabilities()
-  local lspconfig = require('lspconfig')
 
-  -- Setup language servers
+  -- Setup language servers using vim.lsp.config
   if vim.fn.executable("clangd") then
-    lspconfig.clangd.setup {
+    vim.lsp.config.clangd = {
+      cmd = { "clangd" },
+      filetypes = { "c", "cpp", "cc" },
       on_attach = custom_attach,
       capabilities = capabilities,
-      filetypes = { "c", "cpp", "cc" },
       flags = {
         debounce_text_changes = 500,
       },
@@ -221,10 +221,11 @@ function M.setup()
   end
 
   if vim.fn.executable("gopls") then
-    lspconfig.gopls.setup {
+    vim.lsp.config.gopls = {
+      cmd = { "gopls" },
+      filetypes = { "go" },
       on_attach = custom_attach,
       capabilities = capabilities,
-      filetypes = { "go" },
       flags = {
         debounce_text_changes = 500,
       },
@@ -249,10 +250,11 @@ function M.setup()
   end
 
   if vim.fn.executable("qmlls") then
-    lspconfig.qmlls.setup {
+    vim.lsp.config.qmlls = {
+      cmd = { "qmlls" },
+      filetypes = { "qml" },
       on_attach = custom_attach,
       capabilities = capabilities,
-      filetypes = { "qml" },
       flags = {
         debounce_text_changes = 500,
       },
@@ -260,10 +262,11 @@ function M.setup()
   end
 
   if vim.fn.executable("sourcekit-lsp") then
-    lspconfig.sourcekit.setup {
+    vim.lsp.config.sourcekit = {
+      cmd = { "sourcekit-lsp" },
+      filetypes = { "swift" },
       on_attach = custom_attach,
       capabilities = capabilities,
-      filetypes = { "swift" },
       flags = {
         debounce_text_changes = 500,
       },
@@ -294,7 +297,6 @@ function M.setup()
   })
 
   -- Mason setup
-  require("mason").setup()
   local mason_lsp = require('mason-lspconfig')
   mason_lsp.setup({
     ensure_installed = {}, -- Removed ts_ls to avoid conflict with typescript-tools.nvim
@@ -330,9 +332,14 @@ function M.setup()
 
 
   -- python lsp
-  require('lspconfig').basedpyright.setup({
-    on_attach = custom_attach,
-  })
+  if vim.fn.executable("basedpyright") then
+    vim.lsp.config.basedpyright = {
+      cmd = { "basedpyright-langserver", "--stdio" },
+      filetypes = { "python" },
+      on_attach = custom_attach,
+      capabilities = capabilities,
+    }
+  end
 
 end
 
