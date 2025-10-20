@@ -1,26 +1,21 @@
 return {
   {
-    "neovim/nvim-lspconfig",
+    "williamboman/mason.nvim",
     event = { "BufReadPre", "BufNewFile" },
+    build = ":MasonUpdate",
     dependencies = {
-      "williamboman/mason.nvim",
+      "neovim/nvim-lspconfig", -- Still needed for typescript-tools and clangd-extensions
       "williamboman/mason-lspconfig.nvim",
       "p00f/clangd_extensions.nvim",
       "lukas-reineke/lsp-format.nvim",
     },
-    config = function()
-      require("config.lsp").setup()
-    end,
-  },
-  {
-    "williamboman/mason.nvim",
-    build = ":MasonUpdate",
     config = function()
       require("mason").setup({
         ui = {
           border = "rounded",
         },
       })
+      require("config.lsp").setup()
     end,
   },
   {
@@ -37,7 +32,7 @@ return {
   },
   {
     "pmizio/typescript-tools.nvim",
-    dependencies = { "nvim-lua/plenary.nvim", "neovim/nvim-lspconfig" },
+    dependencies = { "nvim-lua/plenary.nvim" },
     ft = { "typescript", "typescriptreact", "javascript", "javascriptreact" },
     config = function()
       -- This is configured in config/lsp/init.lua
