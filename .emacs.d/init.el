@@ -543,7 +543,8 @@
   (("s-\"" . claude-code-toggle)
     ("s-S-<return>" . claude-code-send-return)
     ("s-S-<backspace>" . claude-code-send-escape)
-    ("s-y" . claude-code-send-region)
+    ("s-Y" . claude-code-send-region)
+    ("s-y" . my-send-command-with-buffer-or-region-context)
     ("s-:" . claude-code-send-command))
   :hook
   (prog-mode . claude-code-mode)
@@ -557,6 +558,26 @@
   (setq claude-code-terminal-backend 'vterm)
   (setq claude-code-vterm-buffer-multiline-output nil)
   (setq claude-code-sandbox-program "claude")
+
+  (defun my-send-command-with-buffer-or-region-context (cmd &optional arg)
+  "Send CMD to Claude with context:
+- If region is active: include file + selected line range.
+- Otherwise: include the whole file (no line numbers).
+With prefix ARG, switch to Claude buffer after sending."
+  (interactive "sClaude command: \nP")
+  (let* ((file (claude-code--get-buffer-file-name)))
+    (unless file
+      (error "Current buffer is not associated with a file"))
+    (let* ((context (if (use-region-p)
+                        (claude-code--format-file-reference
+                         file
+                         (line-number-at-pos (region-beginning))
+                         (line-number-at-pos (region-end)))
+                      (format "@%s" file))) ; ← 整个文件，无行号
+           (cmd-with-context (format "%s\n%s" cmd context))
+           (selected-buffer (claude-code--do-send-command cmd-with-context)))
+      (when (and arg selected-buffer)
+        (pop-to-buffer selected-buffer)))))
 
   (defun my-select-claude-window ()
     "Select the claude-code window if visible."
