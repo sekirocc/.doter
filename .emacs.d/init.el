@@ -730,7 +730,7 @@ With prefix ARG, switch to Claude buffer after sending."
   '(success ((t (:foreground "Green1" :weight regular))))
   '(symbol-overlay-default-face ((t (:inherit my-highlight-font-words-face))))
   '(tab-bar ((t (:background "#1e1e1e" :height 140))))
-  '(tab-bar-tab ((t (:foreground "black" :background "yellow" :box (:line-width 2 :color "yellow" :style flat-button)))))
+  '(tab-bar-tab ((t (:foreground "black" :background "yellow" :box (:line-width 3 :color "yellow" :style flat-button)))))
   '(tooltip ((t (:font "IBM Plex Mono-14.0" :box nil))))
   '(treemacs-directory-collapsed-face ((t (:family "IBM Plex Mono" :weight normal :height 140 :underline nil :inherit unspecified :foreground "#57D8D4"))))
   '(treemacs-directory-face ((t (:family "IBM Plex Mono" :weight normal :height 140 :underline nil :inherit unspecified :foreground "#57D8D4"))))
