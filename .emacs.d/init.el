@@ -250,8 +250,8 @@
   "custom highlight for treemacs current line")
 
 (defface my-highlight-font-words-face
-  `((t (:background "#5114FA"
-         :foreground "white"
+  `((t (:background "forest green"
+         :foreground "cornsilk"
          :underline nil
          :weight normal)))
   "custom highlight for treemacs current line")
@@ -268,7 +268,8 @@
 ;;        (set-face-attribute 'font-lock-keyword-face nil :foreground "orchid")))
 ;;    )
 
-(load-theme 'doom-material-dark t)
+;; (load-theme 'doom-material-dark t)
+(load-theme 'kaolin-galaxy t)
 
 ;;; Terminal Colors
 (require 'ansi-color)
@@ -355,22 +356,22 @@
 ;; .env
 (add-to-list 'auto-mode-alist '("\\.env.*\\'" . conf-mode))
 
-; ;;; Advice for Enhanced Editing
-; (defadvice kill-region (before slick-cut activate compile)
-;   "When called interactively with no active region, kill a single line instead."
-;   (interactive
-;     (if mark-active
-;       (list (region-beginning) (region-end))
-;       (list (line-beginning-position) (line-beginning-position 2)))))
+                                        ; ;;; Advice for Enhanced Editing
+                                        ; (defadvice kill-region (before slick-cut activate compile)
+                                        ;   "When called interactively with no active region, kill a single line instead."
+                                        ;   (interactive
+                                        ;     (if mark-active
+                                        ;       (list (region-beginning) (region-end))
+                                        ;       (list (line-beginning-position) (line-beginning-position 2)))))
 
-; (defadvice kill-ring-save (before slick-copy activate compile)
-;   "When called interactively with no active region, copy a single line instead."
-;   (interactive
-;     (if mark-active
-;       (list (region-beginning) (region-end))
-;       (message "Copied line")
-;       (setq my-visual-line-selected t)
-;       (list (line-beginning-position) (line-beginning-position 2)))))
+                                        ; (defadvice kill-ring-save (before slick-copy activate compile)
+                                        ;   "When called interactively with no active region, copy a single line instead."
+                                        ;   (interactive
+                                        ;     (if mark-active
+                                        ;       (list (region-beginning) (region-end))
+                                        ;       (message "Copied line")
+                                        ;       (setq my-visual-line-selected t)
+                                        ;       (list (line-beginning-position) (line-beginning-position 2)))))
 
 ;;; ===================================================================
 ;;; NAVIGATION & SEARCH
@@ -534,63 +535,8 @@
   )
 
 
-(use-package claude-code
-  :ensure t
-  :vc (:url "https://github.com/stevemolitor/claude-code.el" :rev :newest)
-  :bind-keymap
-  ("C-c c" . claude-code-command-map) ;; or your preferred key
-  :bind
-  (("s-\"" . claude-code-toggle)
-    ("s-S-<return>" . claude-code-send-return)
-    ("s-S-<backspace>" . claude-code-send-escape)
-    ("s-Y" . claude-code-send-region)
-    ("s-y" . my-send-command-with-buffer-or-region-context)
-    ("s-:" . claude-code-send-command))
-  :hook
-  (prog-mode . claude-code-mode)
-  :config
-  (add-to-list 'display-buffer-alist
-    '("^\\*claude"
-       (display-buffer-in-side-window)
-       (side . right)
-       (window-width . 90)
-       (window-parameters . ((no-other-window . nil)))))
-  (setq claude-code-terminal-backend 'vterm)
-  (setq claude-code-vterm-buffer-multiline-output nil)
-  (setq claude-code-sandbox-program "claude")
 
-  (defun my-send-command-with-buffer-or-region-context (cmd &optional arg)
-  "Send CMD to Claude with context:
-- If region is active: include file + selected line range.
-- Otherwise: include the whole file (no line numbers).
-With prefix ARG, switch to Claude buffer after sending."
-  (interactive "sClaude command: \nP")
-  (let* ((file (claude-code--get-buffer-file-name)))
-    (unless file
-      (error "Current buffer is not associated with a file"))
-    (let* ((context (if (use-region-p)
-                        (claude-code--format-file-reference
-                         file
-                         (line-number-at-pos (region-beginning))
-                         (line-number-at-pos (region-end)))
-                      (format "@%s" file))) ; ← 整个文件，无行号
-           (cmd-with-context (format "%s\n%s" cmd context))
-           (selected-buffer (claude-code--do-send-command cmd-with-context)))
-      (when (and arg selected-buffer)
-        (pop-to-buffer selected-buffer)))))
-
-  (defun my-select-claude-window ()
-    "Select the claude-code window if visible."
-    (let ((claude-window (seq-find (lambda (win)
-                                     (string-match-p "^\\*claude:" (buffer-name (window-buffer win))))
-                                   (window-list))))
-      (when claude-window (select-window claude-window))))
-
-  (advice-add 'claude-code-send-region :after #'(lambda(&arg) (deactivate-mark)(beginning-of-line)))
-  (advice-add 'claude-code-toggle :after #'my-select-claude-window)
-  )
-;; (use-package claudemacs
-;;   :vc (:fetcher github :repo "cpoile/claudemacs"))
+(require 'init-claude-code)
 
 (require 'claude-posframe)
 
@@ -694,12 +640,10 @@ With prefix ARG, switch to Claude buffer after sending."
   '(deadgrep-match-face ((t (:inherit lazy-highlight))))
   '(eglot-diagnostic-tag-deprecated-face ((t (:underline nil :strike-through nil :foreground "yellow"))))
   '(eglot-diagnostic-tag-unnecessary-face ((t (:foreground "gray" :underline nil))))
-  '(eglot-highlight-symbol-face ((t (:inherit my-highlight-font-words-face))))
   '(eglot-mode-line ((t (:inherit nil :weight bold))))
   '(flymake-error ((t (:foreground "Yellow" :underline nil :weight normal))))
   '(flymake-note ((t (:underline nil))))
   '(flymake-warning ((t (:underline nil))))
-  '(font-lock-comment-face ((t (:foreground "gray"))))
   '(font-lock-doc-face ((t (:inherit font-lock-comment-face :foreground "gray"))))
   '(font-lock-keyword-face ((t (:foreground "orchid" :weight normal))))
   '(font-lock-preprocessor-face ((t (:weight normal))))
@@ -730,7 +674,7 @@ With prefix ARG, switch to Claude buffer after sending."
   '(success ((t (:foreground "Green1" :weight regular))))
   '(symbol-overlay-default-face ((t (:inherit my-highlight-font-words-face))))
   '(tab-bar ((t (:background "#1e1e1e" :height 140))))
-  '(tab-bar-tab ((t (:foreground "black" :background "yellow" :box (:line-width 3 :color "yellow" :style flat-button)))))
+  '(tab-bar-tab ((t (:foreground "black" :background "yellow" :box (:line-width 2 :color "yellow" :style flat-button)))))
   '(tooltip ((t (:font "IBM Plex Mono-14.0" :box nil))))
   '(treemacs-directory-collapsed-face ((t (:family "IBM Plex Mono" :weight normal :height 140 :underline nil :inherit unspecified :foreground "#57D8D4"))))
   '(treemacs-directory-face ((t (:family "IBM Plex Mono" :weight normal :height 140 :underline nil :inherit unspecified :foreground "#57D8D4"))))
