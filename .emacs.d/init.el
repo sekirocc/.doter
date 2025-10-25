@@ -644,6 +644,7 @@
   '(flymake-error ((t (:foreground "Yellow" :underline nil :weight normal))))
   '(flymake-note ((t (:underline nil))))
   '(flymake-warning ((t (:underline nil))))
+  '(font-lock-comment-face ((t (:foreground "#C0C0C0" :slant normal))))
   '(font-lock-doc-face ((t (:inherit font-lock-comment-face :foreground "gray"))))
   '(font-lock-keyword-face ((t (:foreground "orchid" :weight normal))))
   '(font-lock-preprocessor-face ((t (:weight normal))))
