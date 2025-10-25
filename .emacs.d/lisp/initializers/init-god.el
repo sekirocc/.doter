@@ -177,14 +177,15 @@
 (defun my-god-this-is-dark-background-buffer (bufname)
   "Check if BUFNAME should have dark background."
   (interactive)
-  (let ((this-buffer-name (string-trim bufname))
-         (this-buffer-mode (symbol-name (buffer-mode bufname))))
-    (and
-      (eq buffer-read-only t)
-      (not (seq-filter
-             (lambda (n) (string-prefix-p n this-buffer-mode))
-             should-not-display-dark-background-modes))
-      (not (derived-mode-p 'prog-mode)))))
+  t)
+  ;; (let ((this-buffer-name (string-trim bufname))
+  ;;        (this-buffer-mode (symbol-name (buffer-mode bufname))))
+  ;;   (and
+  ;;     (eq buffer-read-only t)
+  ;;     (not (seq-filter
+  ;;            (lambda (n) (string-prefix-p n this-buffer-mode))
+  ;;            should-not-display-dark-background-modes))
+  ;;     (not (derived-mode-p 'prog-mode)))))
 
 (defun my-god-this-buffer-window-no-padding (bufname)
   "Check if BUFNAME window shoudn't have padding."
