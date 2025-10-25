@@ -43,13 +43,16 @@
   (define-key vterm-mode-map (kbd "C-s-c")  #'(lambda() (interactive) (vterm-send-key "c" nil nil t)))
   (define-key vterm-mode-map (kbd "M-i")  #'er/expand-region)
 
-  (defun my-toggle-legendary-buffer-for-vterm()
+  (defun my-toggle-legendary-buffer-for-vterm(&optional arg)
     (if (bound-and-true-p vterm-copy-mode)
       (my-remove-from-legendary-buffers '("*vterm" "*claude"))
       (my-add-to-legendary-buffers '("*vterm" "*claude")))
     (refresh-current-mode))
 
   (add-hook 'vterm-copy-mode-hook #'my-toggle-legendary-buffer-for-vterm)
+
+  (add-hook 'window-buffer-change-functions #'my-toggle-legendary-buffer-for-vterm)
+
   ;; run first time
   (my-toggle-legendary-buffer-for-vterm)
   (keymap-unset vterm-mode-map "M-`")
