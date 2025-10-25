@@ -44,9 +44,8 @@ With prefix ARG, switch to Claude buffer after sending."
                           (line-number-at-pos (region-end)))
                         (format "@%s" file))) ; ← 整个文件，无行号
               (cmd-with-context (format "%s\n%s" cmd context))
-              (selected-buffer (claude-code--do-send-command cmd-with-context)))
-        (when (and arg selected-buffer)
-          (pop-to-buffer selected-buffer)))))
+              (claude-buffer (claude-code--do-send-command cmd-with-context)))
+        (unless (get-buffer-window claude-buffer) (claude-code-toggle)))))
 
   (defun my-select-claude-window ()
     "Select the claude-code window if visible."
