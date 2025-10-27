@@ -235,7 +235,7 @@
   (setq-local default-text-properties '(line-spacing 0.11 line-height 1.11)))
 
 (add-hook 'text-mode-hook #'my-set-small-line-height)
-(add-hook 'prog-mode-hook #'my-set-small-line-height)
+(add-hook 'prog-mode-hook #'my-set-large-line-height)
 (add-hook 'conf-mode-hook #'my-set-small-line-height)
 (add-hook 'org-mode-hook  #'my-set-small-line-height)
 
@@ -660,7 +660,7 @@
   '(line-number ((t (:inherit default :foreground "gray33" :slant normal :weight normal))))
   '(line-number-current-line ((t (:background "#1b2129" :foreground "white" :slant normal :weight normal))))
   '(mode-line ((t (:background "#415367" :foreground "#e5ded6" :underline (:color foreground-color :style line :position t)))))
-  '(mode-line-active ((t (:background "#66c9ff" :foreground "#000000" :box nil :underline nil))))
+  '(mode-line-active ((t (:background "#1a202c" :foreground "green" :box nil :underline nil))))
   '(mode-line-highlight ((t (:box nil :foreground "green"))))
   '(mode-line-inactive ((t (:background "#1a202c" :foreground "#a0aec0" :box nil :underline nil))))
   '(region ((t (:background "#214283" :distant-foreground "#707080"))))
@@ -689,13 +689,13 @@
   '(treemacs-git-untracked-face ((t (:family "IBM Plex Mono" :weight normal :height 140 :underline nil :inherit unspecified :foreground "#C6B8AD"))))
   '(treemacs-root-face ((t (:family "IBM Plex Mono" :weight normal :height 140 :underline nil :inherit unspecified :foreground "#57D8D4"))))
   '(treemacs-tags-face ((t (:family "IBM Plex Mono" :weight normal :height 140 :underline nil :inherit unspecified :foreground "#C6B8AD"))))
-  '(vertical-border ((t (:inherit nil :background "#161c23" :foreground "#66c9ff"))))
+  '(vertical-border ((t (:inherit shadow))))
   '(whitespace-tab ((t (:foreground unspecified :background unspecified :inherit shadow))))
   '(whitespace-trailing ((t (:foreground unspecified :background unspecified :inherit shadow))))
   '(widget-field ((t (:background "#C6B8AD" :foreground "black"))))
-  '(window-divider ((t (:foreground "#66c9ff"))))
-  '(window-divider-first-pixel ((t (:foreground "#415367"))))
-  '(window-divider-last-pixel ((t (:foreground "#415367"))))
+  '(window-divider ((t (:inherit shadow))))
+  '(window-divider-first-pixel ((t (:inherit shadow))))
+  '(window-divider-last-pixel ((t (:inherit shadow))))
   '(yas-field-highlight-face ((t (:inherit my-highlight-font-words-face)))))
 
 ;;; Custom Variables
