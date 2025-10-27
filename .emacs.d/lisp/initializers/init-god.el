@@ -177,7 +177,7 @@
 (defun my-god-this-is-dark-background-buffer (bufname)
   "Check if BUFNAME should have dark background."
   (interactive)
-  t)
+  (not (derived-mode-p 'vterm-mode)))
   ;; (let ((this-buffer-name (string-trim bufname))
   ;;        (this-buffer-mode (symbol-name (buffer-mode bufname))))
   ;;   (and
