@@ -5,6 +5,11 @@
 -- Set leader key BEFORE loading lazy.nvim
 vim.g.mapleader = " "
 
+-- ⚠️ 禁用 ts_ls - 必须在加载任何插件之前
+-- 防止 nvim-lspconfig 或 mason 自动启动 ts_ls
+-- 因为我们使用 typescript-tools.nvim 替代
+vim.g.lsp_skip_servers = { 'ts_ls', 'tsserver' }
+
 -- Bootstrap and setup lazy.nvim
 require('config.lazy').setup()
 

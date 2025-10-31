@@ -32,7 +32,7 @@ return {
       { "<leader>g", function() require('telescope.builtin').live_grep() end, desc = "Live Grep" },
       { "<leader>G", function() require('telescope.builtin').grep_string() end, desc = "Grep String" },
       { "<leader>b", function() require('telescope.builtin').buffers() end, desc = "Buffers" },
-      { "<leader>sy", function() require('telescope.builtin').lsp_document_symbols() end, desc = "LSP Symbols" },
+      { "<leader>ss", function() require('telescope.builtin').lsp_document_symbols({ default_text = "" }) end, desc = "LSP Symbols" },
       { "<leader>p", function() require("telescope").extensions.file_browser.file_browser() end, desc = "File Browser" },
       {
         "F",
