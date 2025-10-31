@@ -32,10 +32,26 @@ return {
   },
   {
     "pmizio/typescript-tools.nvim",
-    dependencies = { "nvim-lua/plenary.nvim" },
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "neovim/nvim-lspconfig",
+    },
     ft = { "typescript", "typescriptreact", "javascript", "javascriptreact" },
     config = function()
-      -- This is configured in config/lsp/init.lua
+      -- 获取 custom_attach 函数
+      local lsp_module = require("config.lsp")
+      local custom_attach = lsp_module.get_custom_attach()
+
+      require("typescript-tools").setup {
+        on_attach = custom_attach,
+        settings = {
+          -- Prefer implementation over declaration
+          preferences = {
+            includeCompletionsForModuleExports = true,
+            includeCompletionsWithInsertText = true,
+          },
+        },
+      }
     end,
   },
 }
