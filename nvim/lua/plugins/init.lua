@@ -19,4 +19,5 @@ return {
   { import = "plugins.comments" },
   { import = "plugins.claudecode" },
   { import = "plugins.diagnostics" },
+  { import = "plugins.conform" },
 }

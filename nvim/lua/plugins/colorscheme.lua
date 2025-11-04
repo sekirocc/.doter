@@ -12,10 +12,6 @@ return {
     lazy = true,
   },
   {
-    "flazz/vim-colorschemes",
-    lazy = true,
-  },
-  {
     "wojciechkepka/bogster",
     lazy = true,
   },
