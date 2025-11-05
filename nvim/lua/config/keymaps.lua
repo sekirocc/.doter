@@ -1,6 +1,6 @@
 local M = {}
 
-local functions = require('config.functions')
+local functions = require("config.functions")
 
 local function disable_diagnostic_temp_then_reactivate(c)
   vim.diagnostic.disable()
@@ -38,19 +38,42 @@ function M.setup()
   vim.api.nvim_set_keymap("i", "<C-t>", "<C-o>O", { noremap = true })
   vim.api.nvim_set_keymap("i", "<M-BS>", "<C-w>", { noremap = true })
 
+  -- 将 Ctrl-[ 映射为退出 terminal 到 Normal 模式
+  vim.api.nvim_set_keymap("t", "<C-[>", "<C-\\><C-N>", { noremap = true, silent = false })
+
   -- Advanced insert mode navigation
-  keymap("i", "<M-d>", function() disable_diagnostic_temp_then_reactivate('"normal dea"') end, { noremap = true })
-  keymap("i", "<M-f>", function() disable_diagnostic_temp_then_reactivate('"normal wa"') end, { noremap = true })
-  keymap("i", "<M-b>", function() disable_diagnostic_temp_then_reactivate('"normal ba"') end, { noremap = true })
-  keymap("i", "<C-_>", function() disable_diagnostic_temp_then_reactivate('"normal ua"') end, { noremap = true })
-  keymap("i", "<C-l>", function() disable_diagnostic_temp_then_reactivate('"normal zza"') end, { noremap = true })
-  keymap("i", "<C-n>", function() disable_diagnostic_temp_then_reactivate('"normal j"') end, { noremap = true })
-  keymap("i", "<C-p>", function() disable_diagnostic_temp_then_reactivate('"normal k"') end, { noremap = true })
+  keymap("i", "<M-d>", function()
+    disable_diagnostic_temp_then_reactivate('"normal dea"')
+  end, { noremap = true })
+  keymap("i", "<M-f>", function()
+    disable_diagnostic_temp_then_reactivate('"normal wa"')
+  end, { noremap = true })
+  keymap("i", "<M-b>", function()
+    disable_diagnostic_temp_then_reactivate('"normal ba"')
+  end, { noremap = true })
+  keymap("i", "<C-_>", function()
+    disable_diagnostic_temp_then_reactivate('"normal ua"')
+  end, { noremap = true })
+  keymap("i", "<C-l>", function()
+    disable_diagnostic_temp_then_reactivate('"normal zza"')
+  end, { noremap = true })
+  keymap("i", "<C-n>", function()
+    disable_diagnostic_temp_then_reactivate('"normal j"')
+  end, { noremap = true })
+  keymap("i", "<C-p>", function()
+    disable_diagnostic_temp_then_reactivate('"normal k"')
+  end, { noremap = true })
 
   -- Normal mode word navigation
-  keymap("n", "<M-d>", function() disable_diagnostic_temp_then_reactivate('"normal de"') end, { noremap = true })
-  keymap("n", "<M-f>", function() disable_diagnostic_temp_then_reactivate('"normal w"') end, { noremap = true })
-  keymap("n", "<M-b>", function() disable_diagnostic_temp_then_reactivate('"normal b"') end, { noremap = true })
+  keymap("n", "<M-d>", function()
+    disable_diagnostic_temp_then_reactivate('"normal de"')
+  end, { noremap = true })
+  keymap("n", "<M-f>", function()
+    disable_diagnostic_temp_then_reactivate('"normal w"')
+  end, { noremap = true })
+  keymap("n", "<M-b>", function()
+    disable_diagnostic_temp_then_reactivate('"normal b"')
+  end, { noremap = true })
 
   -- Quick escape
   vim.api.nvim_set_keymap("i", "<C-q>", "<Esc>", { noremap = true })
@@ -123,8 +146,8 @@ function M.setup()
   vim.api.nvim_set_keymap("v", "P", '"_dP', { noremap = true })
 
   -- Buffer switching
-  vim.api.nvim_set_keymap("n", ",b", '<C-6>', { noremap = true })
-  vim.api.nvim_set_keymap("n", "<Leader>o", ':ClangdSwitchSourceHeader<CR>', { noremap = true })
+  vim.api.nvim_set_keymap("n", ",b", "<C-6>", { noremap = true })
+  vim.api.nvim_set_keymap("n", "<Leader>o", ":ClangdSwitchSourceHeader<CR>", { noremap = true })
 
   -- Escape sequences
   vim.api.nvim_set_keymap("n", "<C-g>", "<ESC><ESC><ESC>", { noremap = true })
@@ -132,10 +155,10 @@ function M.setup()
   vim.api.nvim_set_keymap("v", "<C-g>", "<ESC><ESC><ESC>", { noremap = true })
 
   -- Search and replace
-  vim.api.nvim_set_keymap("v", '<C-r>', '"hy:%sno#<C-r>h##gc<left><left><left>', { noremap = true })
-  vim.api.nvim_set_keymap("n", 'S', ':%sno##g<LEFT><LEFT>', { noremap = true })
-  vim.api.nvim_set_keymap("i", '<C-y>', '<C-r>"', { noremap = true })
-  vim.api.nvim_set_keymap("v", '//', 'y/<C-R>"<CR>"', { noremap = true })
+  vim.api.nvim_set_keymap("v", "<C-r>", '"hy:%sno#<C-r>h##gc<left><left><left>', { noremap = true })
+  vim.api.nvim_set_keymap("n", "S", ":%sno##g<LEFT><LEFT>", { noremap = true })
+  vim.api.nvim_set_keymap("i", "<C-y>", '<C-r>"', { noremap = true })
+  vim.api.nvim_set_keymap("v", "//", 'y/<C-R>"<CR>"', { noremap = true })
 
   -- Command line emacs bindings
   vim.api.nvim_set_keymap("c", "<C-A>", "<Home>", { noremap = true })
@@ -186,9 +209,9 @@ function M.setup()
 
   -- Copy file path
   keymap("n", "<leader>PP", function()
-    local filepath = vim.fn.expand('%:p')
-    vim.fn.setreg('+', filepath)
-    print('Copied to clipboard: ' .. filepath)
+    local filepath = vim.fn.expand("%:p")
+    vim.fn.setreg("+", filepath)
+    print("Copied to clipboard: " .. filepath)
   end, { desc = "Copy absolute file path to clipboard" })
 end
 
