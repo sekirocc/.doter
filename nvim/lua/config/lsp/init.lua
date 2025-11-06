@@ -180,31 +180,8 @@ end
 
 function M.setup()
   -- ⚠️ 最优先禁用 ts_ls - 必须在任何 LSP 启动之前
-  -- 禁用 nvim-lspconfig 中的 ts_ls
-  local lspconfig_ok, lspconfig = pcall(require, "lspconfig")
-  if lspconfig_ok then
-    -- 完全替换 setup 函数为空操作
-    lspconfig.ts_ls.setup = function() end
-    lspconfig.tsserver.setup = function() end
-
-    -- 清除配置定义，防止自动启动
-    if lspconfig.configs then
-      lspconfig.configs.ts_ls = nil
-      lspconfig.configs.tsserver = nil
-    end
-
-    -- 如果 manager 已存在，删除它
-    if lspconfig.ts_ls.manager then
-      lspconfig.ts_ls.manager = nil
-    end
-    if lspconfig.tsserver.manager then
-      lspconfig.tsserver.manager = nil
-    end
-  end
-
-  -- 禁用新的 vim.lsp.config 自动启动
-  -- Note: vim.lsp.config 在 0.11+ 是特殊的元表，不能设置为 nil
-  -- 我们通过在 lspconfig 中拦截 setup 来阻止启动
+  -- Prevent ts_ls/tsserver from being set up (we use typescript-tools.nvim instead)
+  -- The mason handlers below will have empty functions for these servers
 
   -- 添加 autocmd 作为第一道防线：在 FileType 触发时立即阻止 ts_ls
   vim.api.nvim_create_autocmd("FileType", {
@@ -375,10 +352,24 @@ function M.setup()
           end
         end
 
-        require("lspconfig")[server_name].setup({
-          on_attach = custom_attach,
-          capabilities = capabilities,
-        })
+        -- Use new vim.lsp.config API
+        -- Get server config from lspconfig for cmd and filetypes
+        local ok, lspconfig = pcall(require, "lspconfig")
+        if ok and lspconfig[server_name] then
+          local config = lspconfig[server_name].document_config.default_config
+          vim.lsp.config[server_name] = vim.tbl_extend("force", {
+            cmd = config.cmd,
+            filetypes = config.filetypes,
+            root_markers = config.root_dir and { ".git" } or nil,
+          }, {
+            on_attach = custom_attach,
+            capabilities = capabilities,
+          })
+          -- Enable the server for configured filetypes
+          if config.filetypes then
+            vim.lsp.enable(server_name)
+          end
+        end
       end,
       -- Explicitly disable ts_ls to avoid conflict with typescript-tools.nvim
       ["ts_ls"] = function() end,
@@ -407,7 +398,7 @@ function M.setup()
 
   -- python lsp
   if vim.fn.executable("basedpyright-langserver") == 1 then
-    require("lspconfig").basedpyright.setup({
+    vim.lsp.config.basedpyright = {
       cmd = { "basedpyright-langserver", "--stdio" },
       filetypes = { "python" },
       on_attach = custom_attach,
@@ -422,7 +413,8 @@ function M.setup()
           }
         }
       }
-    })
+    }
+    vim.lsp.enable('basedpyright')
   end
 
 end
