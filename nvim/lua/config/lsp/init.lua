@@ -406,13 +406,23 @@ function M.setup()
 
 
   -- python lsp
-  if vim.fn.executable("basedpyright") then
-    vim.lsp.config.basedpyright = {
+  if vim.fn.executable("basedpyright-langserver") == 1 then
+    require("lspconfig").basedpyright.setup({
       cmd = { "basedpyright-langserver", "--stdio" },
       filetypes = { "python" },
       on_attach = custom_attach,
       capabilities = capabilities,
-    }
+      settings = {
+        basedpyright = {
+          analysis = {
+            typeCheckingMode = "standard",
+            autoSearchPaths = true,
+            useLibraryCodeForTypes = true,
+            diagnosticMode = "openFilesOnly",
+          }
+        }
+      }
+    })
   end
 
 end
