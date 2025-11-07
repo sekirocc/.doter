@@ -156,6 +156,7 @@
 (setq should-not-display-dark-background-modes (list
                                                  "dired-mode"
                                                  "vterm-mode"
+                                                 "eldoc-box-mode"
                                                  "xwidget-webkit-mode"
                                                  "minibuffer-mode"
                                                  "dashboard-mode"))
@@ -177,7 +178,13 @@
 (defun my-god-this-is-dark-background-buffer (bufname)
   "Check if BUFNAME should have dark background."
   (interactive)
-  (not (derived-mode-p 'vterm-mode)))
+  (let ((this-buffer-name (string-trim bufname))
+         (this-buffer-mode (symbol-name (buffer-mode bufname))))
+    (not
+      (seq-filter
+        (lambda (n) (string-prefix-p n this-buffer-mode))
+        should-not-display-dark-background-modes))))
+
   ;; (let ((this-buffer-name (string-trim bufname))
   ;;        (this-buffer-mode (symbol-name (buffer-mode bufname))))
   ;;   (and
