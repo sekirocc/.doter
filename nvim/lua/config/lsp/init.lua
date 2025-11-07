@@ -14,11 +14,15 @@ local function LspRename()
   local value = vim.fn.input("LSP Rename: ", curr_name)
   local lsp_params = vim.lsp.util.make_position_params()
 
-  if not value or #value == 0 or curr_name == value then return end
+  if not value or #value == 0 or curr_name == value then
+    return
+  end
 
   lsp_params.newName = value
   vim.lsp.buf_request(0, "textDocument/rename", lsp_params, function(_, res, ctx, _)
-    if not res then return end
+    if not res then
+      return
+    end
 
     local client = vim.lsp.get_client_by_id(ctx.client_id)
     vim.lsp.util.apply_workspace_edit(res, client.offset_encoding)
@@ -26,112 +30,119 @@ local function LspRename()
     local changed_files_count = 0
     local changed_instances_count = 0
 
-    if (res.documentChanges) then
+    if res.documentChanges then
       for _, changed_file in pairs(res.documentChanges) do
         changed_files_count = changed_files_count + 1
         changed_instances_count = changed_instances_count + #changed_file.edits
       end
-    elseif (res.changes) then
+    elseif res.changes then
       for _, changed_file in pairs(res.changes) do
         changed_instances_count = changed_instances_count + #changed_file
         changed_files_count = changed_files_count + 1
       end
     end
 
-    print(string.format("renamed %s instance%s in %s file%s. %s",
-      changed_instances_count,
-      changed_instances_count == 1 and '' or 's',
-      changed_files_count,
-      changed_files_count == 1 and '' or 's',
-      changed_files_count > 1 and "To save them run ':wa'" or ''
-    ))
+    print(
+      string.format(
+        "renamed %s instance%s in %s file%s. %s",
+        changed_instances_count,
+        changed_instances_count == 1 and "" or "s",
+        changed_files_count,
+        changed_files_count == 1 and "" or "s",
+        changed_files_count > 1 and "To save them run ':wa'" or ""
+      )
+    )
   end)
 end
 
 custom_attach = function(client, bufnr)
-  local bufopts = { silent=true, buffer=bufnr }
+  local bufopts = { silent = true, buffer = bufnr }
 
-  vim.keymap.set('n', 'gF', vim.lsp.buf.format, bufopts)
-  vim.keymap.set('n', 'gR', function()
+  vim.keymap.set("n", "gF", vim.lsp.buf.format, bufopts)
+  vim.keymap.set("n", "gR", function()
     vim.lsp.buf.references({ includeDeclaration = false }, {
       on_list = function(options)
         if #options.items == 1 then
-          vim.api.nvim_command('edit ' .. options.items[1].filename)
-          vim.api.nvim_win_set_cursor(0, {options.items[1].lnum, options.items[1].col - 1})
+          vim.api.nvim_command("edit " .. options.items[1].filename)
+          vim.api.nvim_win_set_cursor(0, { options.items[1].lnum, options.items[1].col - 1 })
           -- Pulse the current line after jumping
-          require('config.functions').pulse_current_line()
+          require("config.functions").pulse_current_line()
         else
-          vim.fn.setqflist({}, ' ', options)
-          vim.cmd('copen')
+          vim.fn.setqflist({}, " ", options)
+          vim.cmd("copen")
         end
-      end
+      end,
     })
   end, bufopts)
 
-  vim.keymap.set('n', 'gD', function()
+  vim.keymap.set("n", "gD", function()
     vim.lsp.buf.declaration()
-    vim.defer_fn(function() require('config.functions').pulse_current_line() end, 100)
+    vim.defer_fn(function()
+      require("config.functions").pulse_current_line()
+    end, 100)
   end, bufopts)
-  vim.keymap.set('n', 'gd', function()
+  vim.keymap.set("n", "gd", function()
     local params = vim.lsp.util.make_position_params()
-    vim.lsp.buf_request(0, 'textDocument/definition', params, function(err, result, ctx, config)
+    vim.lsp.buf_request(0, "textDocument/definition", params, function(err, result, ctx, config)
       if err then
-        vim.notify('Error getting definition: ' .. err.message, vim.log.levels.ERROR)
+        vim.notify("Error getting definition: " .. err.message, vim.log.levels.ERROR)
         return
       end
 
       if not result or vim.tbl_isempty(result) then
-        vim.notify('No definition found', vim.log.levels.INFO)
+        vim.notify("No definition found", vim.log.levels.INFO)
         return
       end
 
       -- If only one result, jump directly
       if #result == 1 then
-        vim.lsp.util.jump_to_location(result[1], 'utf-8')
+        vim.lsp.util.jump_to_location(result[1], "utf-8")
       else
         -- Multiple results, use quickfix but jump to first one
-        vim.lsp.util.jump_to_location(result[1], 'utf-8')
+        vim.lsp.util.jump_to_location(result[1], "utf-8")
         -- Optionally populate quickfix for other locations
         -- vim.fn.setqflist({}, 'r', { items = vim.lsp.util.locations_to_items(result, 'utf-8') })
       end
 
-      vim.defer_fn(function() require('config.functions').pulse_current_line() end, 100)
+      vim.defer_fn(function()
+        require("config.functions").pulse_current_line()
+      end, 100)
     end)
   end, bufopts)
-  vim.keymap.set('n', 'gh',
-    function()
-        vim.lsp.buf.hover { border = "single", max_height = 25, max_width = 120 }
-    end,
-  bufopts)
-  vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, bufopts)
-  vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, bufopts)
-  vim.keymap.set('n', '<space>wa', vim.lsp.buf.add_workspace_folder, bufopts)
-  vim.keymap.set('n', '<space>wr', vim.lsp.buf.remove_workspace_folder, bufopts)
-  vim.keymap.set('n', '<space>wl', function() print(vim.inspect(vim.lsp.buf.list_workspace_folders())) end, bufopts)
-  vim.keymap.set('n', '<space>D', vim.lsp.buf.type_definition, bufopts)
-  vim.keymap.set('n', '<space>rn', vim.lsp.buf.rename, bufopts)
+  vim.keymap.set("n", "gh", function()
+    vim.lsp.buf.hover({ border = "single", max_height = 25, max_width = 120 })
+  end, bufopts)
+  vim.keymap.set("n", "gi", vim.lsp.buf.implementation, bufopts)
+  vim.keymap.set("n", "<C-k>", vim.lsp.buf.signature_help, bufopts)
+  vim.keymap.set("n", "<space>wa", vim.lsp.buf.add_workspace_folder, bufopts)
+  vim.keymap.set("n", "<space>wr", vim.lsp.buf.remove_workspace_folder, bufopts)
+  vim.keymap.set("n", "<space>wl", function()
+    print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
+  end, bufopts)
+  vim.keymap.set("n", "<space>D", vim.lsp.buf.type_definition, bufopts)
+  vim.keymap.set("n", "<space>rn", vim.lsp.buf.rename, bufopts)
 
-  vim.keymap.set('n', 'ga',     vim.lsp.buf.code_action, bufopts)
-  vim.keymap.set('n', '<M-CR>', vim.lsp.buf.code_action, bufopts)
+  vim.keymap.set("n", "ga", vim.lsp.buf.code_action, bufopts)
+  vim.keymap.set("n", "<M-CR>", vim.lsp.buf.code_action, bufopts)
 
-  vim.keymap.set('n', '<space>e', vim.diagnostic.open_float, bufopts)
-  vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, bufopts)
-  vim.keymap.set('n', ']d', vim.diagnostic.goto_next, bufopts)
-  vim.keymap.set('n', '<space>q', vim.diagnostic.setloclist, bufopts)
+  vim.keymap.set("n", "<space>e", vim.diagnostic.open_float, bufopts)
+  vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, bufopts)
+  vim.keymap.set("n", "]d", vim.diagnostic.goto_next, bufopts)
+  vim.keymap.set("n", "<space>q", vim.diagnostic.setloclist, bufopts)
 
-  vim.keymap.set('n', 'grr', function()
+  vim.keymap.set("n", "grr", function()
     vim.lsp.buf.references({ includeDeclaration = false }, {
       on_list = function(options)
         if #options.items == 1 then
-          vim.api.nvim_command('edit ' .. options.items[1].filename)
-          vim.api.nvim_win_set_cursor(0, {options.items[1].lnum, options.items[1].col - 1})
+          vim.api.nvim_command("edit " .. options.items[1].filename)
+          vim.api.nvim_win_set_cursor(0, { options.items[1].lnum, options.items[1].col - 1 })
           -- Pulse the current line after jumping
-          require('config.functions').pulse_current_line()
+          require("config.functions").pulse_current_line()
         else
-          vim.fn.setqflist({}, ' ', options)
-          vim.cmd('copen')
+          vim.fn.setqflist({}, " ", options)
+          vim.cmd("copen")
         end
-      end
+      end,
     })
   end, bufopts)
 
@@ -194,7 +205,7 @@ function M.setup()
             vim.lsp.stop_client(client.id, true)
           end
         end
-      end, 100)  -- 100ms 后检查
+      end, 100) -- 100ms 后检查
     end,
   })
 
@@ -211,21 +222,26 @@ function M.setup()
     end,
   })
 
-  require("lsp-format").setup{}
+  require("lsp-format").setup({})
 
   -- Change diagnostic signs
-  fn.sign_define("DiagnosticSignError", { text = '🆇', texthl = "DiagnosticSignError" })
-  fn.sign_define("DiagnosticSignWarn", { text = '!', texthl = "DiagnosticSignWarn" })
-  fn.sign_define("DiagnosticSignInfo", { text = 'ℹ️', texthl = "DiagnosticSignInfo" })
-  fn.sign_define("DiagnosticSignHint", { text = '', texthl = "DiagnosticSignHint" })
+  fn.sign_define("DiagnosticSignError", { text = "🆇", texthl = "DiagnosticSignError" })
+  fn.sign_define("DiagnosticSignWarn", { text = "!", texthl = "DiagnosticSignWarn" })
+  fn.sign_define("DiagnosticSignInfo", { text = "ℹ️", texthl = "DiagnosticSignInfo" })
+  fn.sign_define("DiagnosticSignHint", { text = "", texthl = "DiagnosticSignHint" })
 
   -- Global config for diagnostic
-  diagnostic.config {
+  diagnostic.config({
     underline = true,
     virtual_text = false,
     signs = true,
     severity_sort = true,
-  }
+    float = {
+      border = "rounded",
+      focusable = true,
+      source = "always",
+    },
+  })
 
   -- Set diagnostic colors
   vim.cmd([[
@@ -240,7 +256,7 @@ function M.setup()
     border = "rounded",
   })
 
-  local capabilities = require('cmp_nvim_lsp').default_capabilities()
+  local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
   -- Setup language servers using vim.lsp.config
   if vim.fn.executable("clangd") then
@@ -332,7 +348,7 @@ function M.setup()
   })
 
   -- Mason setup (ts_ls 已在函数开头和 init.lua 中禁用)
-  local mason_lsp = require('mason-lspconfig')
+  local mason_lsp = require("mason-lspconfig")
 
   -- 获取要跳过的服务器列表
   local skip_servers = vim.g.lsp_skip_servers or {}
@@ -381,20 +397,19 @@ function M.setup()
   -- (FileType autocmd 已在函数开头设置)
 
   -- C++ tools
-  require 'nt-cpp-tools'.setup({
+  require("nt-cpp-tools").setup({
     preview = {
-      quit = 'q',
-      accept = '<tab>'
+      quit = "q",
+      accept = "<tab>",
     },
-    header_extension = 'h',
-    source_extension = 'cpp',
+    header_extension = "h",
+    source_extension = "cpp",
     custom_define_class_function_commands = {
       TSCppImplWrite = {
-        output_handle = require'nt-cpp-tools.output_handlers'.get_add_to_cpp()
-      }
-    }
+        output_handle = require("nt-cpp-tools.output_handlers").get_add_to_cpp(),
+      },
+    },
   })
-
 
   -- python lsp
   if vim.fn.executable("basedpyright-langserver") == 1 then
@@ -410,13 +425,12 @@ function M.setup()
             autoSearchPaths = true,
             useLibraryCodeForTypes = true,
             diagnosticMode = "openFilesOnly",
-          }
-        }
-      }
+          },
+        },
+      },
     }
-    vim.lsp.enable('basedpyright')
+    vim.lsp.enable("basedpyright")
   end
-
 end
 
 -- Export custom_attach function for use by other modules
