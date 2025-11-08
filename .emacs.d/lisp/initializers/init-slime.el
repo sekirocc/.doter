@@ -1,17 +1,21 @@
 
+;;
+;; brew install roswell
+;;
+
 (use-package slime
   :ensure t
   :defer t
   :init
-  (setq inferior-lisp-program (executable-find "sbcl"))
+  (setq inferior-lisp-program "ros -L sbcl-bin run")
+  ;; 在 Lisp 启动时就加载 Quicklisp 的 Swank
+  (setq slime-lisp-implementations
+        '((sbcl ("ros" "-L" "sbcl-bin"
+                 "-e" "(ql:quickload :swank)"
+                 "-e" "(swank:create-server :dont-close t)"
+                 "run"))))
   :config
-  (slime-setup '(slime-fancy slime-company))
-  :hook
-  (slime-mode . slime-company)
-  (slime-mode . (lambda ()
-                  (load (expand-file-name "~/quicklisp/slime-helper.el"))
-                  (add-to-list 'slime-contribs 'slime-fancy)
-                  (add-to-list 'slime-contribs 'inferior-slime))))
+  (slime-setup '(slime-fancy)))
 
 (use-package slime-company
   :after slime

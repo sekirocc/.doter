@@ -80,7 +80,6 @@
                        "cfrs-input-mode"
                        "help-mode"
                        "xwidget-webkit-mode"
-                       "lisp-mode"
                        "slime-mode"
                        "minibuffer-mode"
                        "eat-mode"
