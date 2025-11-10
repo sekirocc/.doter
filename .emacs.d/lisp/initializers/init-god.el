@@ -180,9 +180,13 @@
   (let ((this-buffer-name (string-trim bufname))
          (this-buffer-mode (symbol-name (buffer-mode bufname))))
     (not
-      (seq-filter
-        (lambda (n) (string-prefix-p n this-buffer-mode))
-        should-not-display-dark-background-modes))))
+      (or
+        ;; Check if buffer name matches (for eldoc-box and similar)
+        (string-prefix-p "*eldoc-box*" this-buffer-name)
+        ;; Check if major-mode matches
+        (seq-filter
+          (lambda (n) (string-prefix-p n this-buffer-mode))
+          should-not-display-dark-background-modes)))))
 
   ;; (let ((this-buffer-name (string-trim bufname))
   ;;        (this-buffer-mode (symbol-name (buffer-mode bufname))))
