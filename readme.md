@@ -57,6 +57,7 @@ uv tool install basedpyright
 
 
 
+
 # or macOS
 brew install ripgrep ag fd
 
@@ -78,6 +79,35 @@ emacs in macOS, enlarge tooltip fonts.
 defaults write org.gnu.Emacs NSToolTipsFontSize -int 16
 ```
 
+#### emacs
+
+
+```bash
+# ubuntu
+sudo apt install texinfo
+sudo apt install libxpm-dev libjpeg-dev libgif-dev libtiff-dev libgnutls28-dev libpng-dev
+sudo apt install build-essential libgtk-3-dev libgnutls28-dev \
+    libncurses5-dev libxml2-dev libtiff5-dev libgif-dev libjpeg-dev \
+    libpng-dev librsvg2-dev libm17n-dev libotf-dev libjansson-dev \
+    libgccjit-12-dev texinfo autoconf libcairo2-dev
+
+git clone --depth=1 https://github.com/emacs-mirror/emacs.git
+cd emacs
+./autogen.sh
+./configure \
+    --with-pgtk \
+    --with-native-compilation=aot \
+    --with-json \
+    --with-cairo \
+    --without-imagemagick \
+    --without-x \
+    --without-xaw3d \
+    --prefix=/usr/local
+make -j8
+sudo make install
+
+
+```
 
 #### kak
 
