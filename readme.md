@@ -34,6 +34,7 @@ sudo apt install silversearcher-ag
 sudo apt install ripgrep
 sudo apt install fd-find
 sudo apt install xclip
+sudo apt install fonts-wqy-microhei
 
 # or macOS
 brew install ripgrep ag fd
