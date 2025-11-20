@@ -36,6 +36,27 @@ sudo apt install fd-find
 sudo apt install xclip
 sudo apt install fonts-wqy-microhei
 
+
+# some dev tools
+sudo apt install flatpak
+sudo apt install nodejs
+sudo apt install apt-file
+sudo apt install hub
+sudo apt install ros
+sudo apt install npm
+sudo apt install golang
+sudo apt install openjdk-21-jdk
+sudo apt install mariadb-server
+sudo apt install cmake
+sudo apt install clang-19
+sudo apt install htop
+sudo apt install fonts-wqy-microhei
+curl -LsSf https://astral.sh/uv/install.sh | sh
+uv tool install basedpyright
+
+
+
+
 # or macOS
 brew install ripgrep ag fd
 
@@ -69,14 +90,11 @@ sudo ln -s /bin/python3 /bin/python
 
 #### nvim
 
-install plug.vim
-
-```
-curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs \
-    https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-
-nvim +PlugInstall +qall
-
+# install neovim
+git clone https://github.com/neovim/neovim.git
+cd neovim
+make CMAKE_BUILD_TYPE=RelWithDebInfo
+sudo make install
 
 ```
 
