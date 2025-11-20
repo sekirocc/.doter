@@ -18,6 +18,7 @@ cfg.font = wezterm.font_with_fallback{
     { family = "DejaVuSansM Nerd Font" },
     { family = "IBM Plex Mono", weight = "Regular" },
     { family = "Cascadia Mono PL", weight = "DemiLight" },
+    { family = "WenQuanYi Micro Hei", weight = "Regular" },
     { family = "冬青黑体简体中文", weight = "DemiLight" },
 }
 
