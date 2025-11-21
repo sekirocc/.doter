@@ -293,6 +293,7 @@
 ;;; Local Libraries (immediate loading required)
 (require 'init-dired-plus)
 
+
 ;; Call functions from my-utils after loading
 
 ;;; Benchmark
@@ -304,6 +305,8 @@
 (require 'init-treesit)
 (require 'init-slime)
 (require 'my-key-bindings)
+
+(require 'init-wayland)
 
 (global-unset-key [(control z)])
 
