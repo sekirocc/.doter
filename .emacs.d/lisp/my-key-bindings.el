@@ -63,7 +63,7 @@
 (bind-key* (kbd "s-t") #'+funcs/new-empty-buffer)
 
 (bind-key* (kbd "s-T") #'multi-vterm)
-(bind-key* (kbd "C-t") #'claude-posframe-toggle)
+;; (bind-key* (kbd "C-t") #'claude-posframe-toggle)
 (bind-key* (kbd "C-,") #'claude-code-toggle)
 
 (bind-key* (kbd "s-<backspace>") #'my-delete-to-bol)
@@ -112,7 +112,7 @@
 (when (display-graphic-p)
   (bind-key* (kbd "C--") 'nice-jumper/backward)
   (bind-key* (kbd "C-_") 'nice-jumper/forward)
-)
+  )
 
 
 (bind-key* (kbd "C-c \\") 'my-toggle-eldoc-box-help-at-point)
