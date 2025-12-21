@@ -266,6 +266,7 @@ export PATH="$HOME/Library/Application Support/JetBrains/Toolbox/scripts:$PATH"
 export PATH="$HOME/zig/zls/bin:$PATH"
 export PATH="$HOME/zig/zig-macos-aarch64:$PATH"
 export PATH="$HOME/.roswell/bin:$PATH"
+export PATH="$HOME/platform-tools:$PATH"
 
 export VCPKG_ROOT="$HOME/vcpkg"
 
