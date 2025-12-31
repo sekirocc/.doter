@@ -31,7 +31,8 @@ Example: 'project/src/main/java/File.java' -> 'p/s/m/j/File.java'"
           (abbreviated-parts
             (mapcar (lambda (part)
                       ;; 保持文件名完整，只缩写目录名
-                      (if (or (string-suffix-p (file-name-extension path t) part)
+                      (if (or (string= part "")
+                            (string-suffix-p (file-name-extension path t) part)
                             (string= part (car (last parts))))
                         part
                         ;; 缩写目录名
