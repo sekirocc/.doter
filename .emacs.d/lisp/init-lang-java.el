@@ -19,7 +19,17 @@
 ;; JDT Language Server paths
 (defvar jdt-language-server-dir (file-name-concat java-local-dir "jdt-language-server-latest"))
 (defvar jdt-language-server-workspaces (file-name-concat java-local-dir "jdt-language-server-workspaces"))
-(defvar jdt-language-server-config-dir (file-name-concat jdt-language-server-dir "config_mac_arm"))
+
+(defvar jdt-language-server-config-dir
+  (file-name-concat jdt-language-server-dir
+    (cond
+      ((eq system-type 'darwin)
+       (if (string-match-p "arm64\\|aarch64" system-configuration)
+           "config_mac_arm"
+         "config_mac"))
+      ((eq system-type 'gnu/linux) "config_linux")
+      ((eq system-type 'windows-nt) "config_win")
+      (t "config_linux"))))
 
 ;; Java development JAR files
 (defvar java-lombok-jar (file-name-concat java-lombok-dir "lombok.jar"))
