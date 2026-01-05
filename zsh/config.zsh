@@ -68,6 +68,7 @@ loadconda(){
 }
 
 export DEVLOG="$HOME/work/code/cpp/dev/"
+export CODEDIR="$HOME/work/code"
 ssp() {
     local my_curr_dir=$(basename "$PWD")
     local my_logdev_dir="${DEVLOG}/cursor_chats/${my_curr_dir}"
@@ -83,6 +84,10 @@ ssp() {
     done
 }
 
+
+if [ -f /usr/bin/fdfind ]; then
+    alias fd=/usr/bin/fdfind
+fi
 
 sssp () {
     (
@@ -142,7 +147,7 @@ sssp () {
 
         # 使用 fd 查找所有 .specstory 目录
         echo "Finding all .specstory directories..."
-        specstory_dirs=$(fd '.specstory' '/Users/jiechen/work/code' -t d -d 4 --no-ignore --hidden)
+        specstory_dirs=$(fd '.specstory' "${CODEDIR}" -t d -d 4 --no-ignore --hidden)
 
         # 检查是否找到任何 .specstory 目录
         if [[ -z "$specstory_dirs" ]]; then
