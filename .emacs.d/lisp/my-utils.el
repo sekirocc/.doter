@@ -1004,14 +1004,39 @@ If buffer-or-name is nil return current buffer's mode."
   (my-M-x)
   )
 
-(defun my-set-proxy()
+(defun my-set-proxy (&optional ip port)
+  "Set HTTP/HTTPS proxy environment variables.
+If called interactively, prompt for IP and port.
+Default port is 9910 if not provided."
   (interactive)
-  (setenv "http_proxy" "http://127.0.0.1:9910")
-  (setenv "https_proxy" "http://127.0.0.1:9910")
-  (setenv "HTTP_PROXY" "http://127.0.0.1:9910")
-  (setenv "HTTPS_PROXY" "http://127.0.0.1:9910")
-  (setenv "no_proxy" "localhost,127.0.0.1,::1,192.168.0.0/16,172.16.0.0/12,10.0.0.0/8,172.168.0.0/16")
-  (setenv "NO_PROXY" "localhost,127.0.0.1,::1,192.168.0.0/16,172.16.0.0/12,10.0.0.0/8,172.168.0.0/16")
+  ;; 如果是交互式调用（M-x），提示用户输入
+  (when (called-interactively-p 'interactive)
+    (setq ip (read-string "Proxy IP (e.g. 127.0.0.1): " "127.0.0.1"))
+    (setq port (read-number "Proxy Port (e.g. 9910): " 9910)))
+
+  ;; 确保 port 是整数
+  (unless (integerp port)
+    (setq port (string-to-number (format "%s" port))))
+
+  ;; 构造代理 URL
+  (let ((proxy-url (format "http://%s:%d" ip port))
+        (no-proxy-list "localhost,127.0.0.1,::1,192.168.0.0/16,172.16.0.0/12,10.0.0.0/8"))
+
+    ;; 设置大小写两种形式（有些工具只认大写或小写）
+    (dolist (var '("http_proxy" "https_proxy" "HTTP_PROXY" "HTTPS_PROXY"))
+      (setenv var proxy-url))
+
+    (dolist (var '("no_proxy" "NO_PROXY"))
+      (setenv var no-proxy-list))
+
+    (message "Proxy set to: %s (bypass: %s)" proxy-url no-proxy-list)))
+
+(defun my-unset-proxy()
+  (interactive)
+  (setenv "http_proxy" nil)
+  (setenv "https_proxy" nil)
+  (setenv "HTTP_PROXY" nil)
+  (setenv "HTTPS_PROXY" nil)
   )
 
 
