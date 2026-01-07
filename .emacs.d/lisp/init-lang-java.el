@@ -79,30 +79,21 @@
       (message "Created directory: %s" dir))))
 
 (defun java-setup-download-file (url destination)
-  "从 URL 下载文件到 DESTINATION，安全跳过 HTTP 头部。"
+  "从 URL 下载文件到 DESTINATION。"
   (let ((download-buffer (url-retrieve-synchronously url t)))
-    (if (not download-buffer)
-        (progn
-          (message "Failed to download: %s" url)
-          nil)
+    (when download-buffer
       (with-current-buffer download-buffer
-        (unwind-protect
-            (progn
-              (goto-char (point-min))
-              ;; 检查是否是有效的 HTTP 响应
-              (unless (looking-at "HTTP/")
-                (error "Invalid response from %s" url))
-              ;; 查找第一个空行（\n\n 或 \r\n\r\n）
-              (let ((body-start (save-excursion
-                                  (if (re-search-forward "\n\n\\|\r\n\r\n" nil t)
-                                      (match-end 0)
-                                    (point-max)))))
-                (delete-region (point-min) body-start)
-                (let ((coding-system-for-write 'binary))
-                  (write-region (point-min) (point-max) destination))
-                (message "Downloaded: %s -> %s" url destination)
-                t))
-          (kill-buffer))))))
+        (goto-char (point-min))
+        ;; 跳过 HTTP 头
+        (re-search-forward "^$" nil 'move)
+        (forward-char)
+        (delete-region (point-min) (point))
+        ;; 写入文件
+        (let ((coding-system-for-write 'binary))
+          (write-region (point-min) (point-max) destination))
+        (kill-buffer))
+      (message "Downloaded: %s" destination)
+      t)))
 
 (defun java-setup-download-lombok ()
   "下载 Lombok JAR 文件。"
