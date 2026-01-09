@@ -744,29 +744,6 @@
 
 
 
-;; 例如 12pt = 120
-(if (my-system-type-is-darwin)
-  (defvar my-font-height 140)
-  (defvar my-font-height 120))
-
-;; 只设置 :height，其他属性由 custom-set-faces 提供
-(with-eval-after-load 'treemacs
-  (dolist (face '(
-                   tab-bar
-                   treemacs-directory-collapsed-face
-                   treemacs-directory-face
-                   treemacs-file-face
-                   treemacs-git-added-face
-                   treemacs-git-conflict-face
-                   treemacs-git-ignored-face
-                   treemacs-git-modified-face
-                   treemacs-git-renamed-face
-                   treemacs-git-unmodified-face
-                   treemacs-git-untracked-face
-                   treemacs-root-face
-                   treemacs-tags-face))
-    (set-face-attribute face nil :height my-font-height))
-  )
 
 
 ;;; init.el ends here
