@@ -1018,6 +1018,12 @@ Default port is 9910 if not provided."
   (unless (integerp port)
     (setq port (string-to-number (format "%s" port))))
 
+  ;; 确保默认值
+  (unless (> port 0)
+    (setq port 9910))
+  (unless (> (length ip) 0)
+    (setq ip "127.0.0.1"))
+
   ;; 构造代理 URL
   (let ((proxy-url (format "http://%s:%d" ip port))
         (no-proxy-list "localhost,127.0.0.1,::1,192.168.0.0/16,172.16.0.0/12,10.0.0.0/8"))
