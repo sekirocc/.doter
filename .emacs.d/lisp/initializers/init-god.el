@@ -81,6 +81,7 @@
                        "help-mode"
                        "xwidget-webkit-mode"
                        "slime-mode"
+                       "cider-repl-mode"
                        "minibuffer-mode"
                        "eat-mode"
                        "inferior-python-mode"
