@@ -74,3 +74,4 @@ elpy/
 package-quickstart.el
 .lsp-session*
 projects.eld
+elpa/vterm-*/build/*
