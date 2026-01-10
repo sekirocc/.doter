@@ -61,6 +61,9 @@ uv tool install basedpyright
 
 # or macOS
 brew install ripgrep ag fd
+## language specific
+brew install clojure clojure-lsp clojurescript cljfmt
+
 
 brew tap homebrew/cask-fonts
 brew install --cask font-dejavu-sans-mono-nerd-font
@@ -79,6 +82,8 @@ emacs in macOS, enlarge tooltip fonts.
 ```
 defaults write org.gnu.Emacs NSToolTipsFontSize -int 16
 ```
+
+
 
 #### emacs
 
