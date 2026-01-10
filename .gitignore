@@ -137,3 +137,4 @@ claude-flow
 hive-mind-prompt-*.txt
 .claude
 CLAUDE.md
+sublime/User/formatter.assets/*
