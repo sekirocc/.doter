@@ -6,7 +6,7 @@
   :init
   (setq-default format-all-formatters
       '(("Rust" (rustfmt "--edition" "2021" "--config" "max_width=120"))
-        ("Clojure" (cljfmt "fix" "--no-ansi" "-"))))
+        ("Clojure" cljfmt)))
   ;;   :config
   ;;   (setq-default format-all-formatters
   ;;                 '(("C"     (astyle "--mode=c"))

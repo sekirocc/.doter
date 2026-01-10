@@ -62,7 +62,7 @@ uv tool install basedpyright
 # or macOS
 brew install ripgrep ag fd
 ## language specific
-brew install clojure clojure-lsp clojurescript cljfmt
+brew install clojure clojure-lsp clojurescript
 
 
 brew tap homebrew/cask-fonts
