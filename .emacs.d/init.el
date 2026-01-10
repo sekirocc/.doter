@@ -522,7 +522,8 @@
 
 (require 'init-claude-code)
 
-(require 'claude-posframe)
+;; (require 'claude-posframe)
+(require 'gitignore-generator)
 
 
 

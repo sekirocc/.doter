@@ -21,6 +21,9 @@ pom.xml.asc
 *.jar
 *.class
 
+.clj-kondo
+.lsp
+
 # Shadow-CLJS
 .shadow-cljs/
 node_modules/
