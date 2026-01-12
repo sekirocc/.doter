@@ -63,7 +63,7 @@
 (bind-key* (kbd "s-t") #'+funcs/new-empty-buffer)
 
 (bind-key* (kbd "s-T") #'multi-vterm)
-;; (bind-key* (kbd "C-t") #'claude-posframe-toggle)
+(bind-key* (kbd "C-t") #'claude-code-toggle)
 (bind-key* (kbd "C-,") #'claude-code-toggle)
 
 
