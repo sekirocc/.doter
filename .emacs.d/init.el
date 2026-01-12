@@ -635,7 +635,6 @@
   '(flymake-error ((t (:foreground "Yellow" :background "black" :underline nil :weight normal))))
   '(flymake-note ((t (:underline nil))))
   '(flymake-warning ((t (:underline nil))))
-  ;; '(font-lock-comment-face ((t (:foreground "#C0C0C0" :slant normal))))
   '(font-lock-doc-face ((t (:inherit font-lock-comment-face :foreground "gray"))))
   '(font-lock-keyword-face ((t (:foreground "orchid" :weight normal))))
   '(font-lock-preprocessor-face ((t (:weight normal))))
@@ -734,7 +733,11 @@
   '(pos-tip-foreground-color "#d4d4d6")
   '(recentf-save-file (expand-file-name "~/.emacs.d/.local/recentf"))
   '(safe-local-variable-values
-     '((python-shell-interpreter-args . "run python")
+     '((eval setq-local cider-preferred-build-tool 'clojure-cli
+         cider-default-cljs-repl 'shadow)
+        (projectile-project-root
+          . "/Users/jiechen/work/code/clj/ringbell")
+        (python-shell-interpreter-args . "run python")
         (projectile-project-root . ".")
         (python-shell-interpreter-args . "python -i")
         (python-shell-interpreter . "uv")

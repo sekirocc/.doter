@@ -366,6 +366,12 @@
         t)
       (user-error "No main method found in this file! Is the file saved?!"))))
 
+(use-package jarchive
+  :ensure t
+  :after eglot
+  :config
+  (jarchive-mode 1))
+
 (provide 'init-lang-java)
 
 ;;; init-lang-java.el ends here
