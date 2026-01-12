@@ -296,4 +296,7 @@ export VCPKG_ROOT="$HOME/vcpkg"
 source <(fzf --zsh)
 
 alias ffplay="ffplay -vf \"drawtext=text='%{pts\:hms}':x=10:y=10:fontsize=32:fontcolor=yellow:box=1:boxcolor=red@0.8:boxborderw=10\" "
-alias claude="$HOME/.claude/local/claude"
+
+if [ -f "$HOME/.claude/local/claude" ]; then
+    alias claude="$HOME/.claude/local/claude"
+fi
