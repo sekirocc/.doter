@@ -312,6 +312,20 @@ function M.setup()
     }
   end
 
+  if vim.fn.executable("clojure-lsp") then
+    vim.lsp.config.clojure_lsp = {
+      cmd = { "clojure-lsp" },
+      filetypes = { "clojure", "edn" },
+      on_attach = custom_attach,
+      capabilities = capabilities,
+      flags = {
+        debounce_text_changes = 500,
+      },
+      root_markers = { "project.clj", "deps.edn", "build.boot", "shadow-cljs.edn", ".git" },
+    }
+    vim.lsp.enable("clojure_lsp")
+  end
+
   if vim.fn.executable("sourcekit-lsp") then
     vim.lsp.config.sourcekit = {
       cmd = { "sourcekit-lsp" },
