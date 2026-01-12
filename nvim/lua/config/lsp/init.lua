@@ -94,19 +94,21 @@ custom_attach = function(client, bufnr)
         return
       end
 
-      -- If only one result, jump directly
-      if #result == 1 then
-        vim.lsp.util.jump_to_location(result[1], "utf-8")
+      -- Normalize result: could be a single location or an array
+      local locations = {}
+      if vim.islist(result) then
+        locations = result
       else
-        -- Multiple results, use quickfix but jump to first one
-        vim.lsp.util.jump_to_location(result[1], "utf-8")
-        -- Optionally populate quickfix for other locations
-        -- vim.fn.setqflist({}, 'r', { items = vim.lsp.util.locations_to_items(result, 'utf-8') })
+        locations = { result }
       end
 
-      vim.defer_fn(function()
-        require("config.functions").pulse_current_line()
-      end, 100)
+      -- Jump to the first location
+      if locations[1] then
+        vim.lsp.util.jump_to_location(locations[1], "utf-8")
+        vim.defer_fn(function()
+          require("config.functions").pulse_current_line()
+        end, 100)
+      end
     end)
   end, bufopts)
   vim.keymap.set("n", "gh", function()
