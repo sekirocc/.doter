@@ -58,6 +58,27 @@ With prefix ARG, switch to Claude buffer after sending."
   (advice-add 'claude-code-toggle :after #'my-select-claude-window)
   )
 
+
+(setq my-glm-api-key nil)
+(defun claude-code-glm (&optional api-key)
+  (interactive)
+  (when (called-interactively-p 'interactive)
+    (setq api-key (read-string "API Key: ")))
+  ;; api-key first
+  (setq my-glm-api-key (or api-key my-glm-api-key))
+  (if my-glm-api-key
+    (progn
+      (setenv "ANTHROPIC_BASE_URL" "https://open.bigmodel.cn/api/anthropic")
+      (setenv "ANTHROPIC_AUTH_TOKEN" my-glm-api-key)
+      (setenv "http_proxy" nil)
+      (setenv "https_proxy" nil)
+      (setenv "HTTP_PROXY" nil)
+      (setenv "HTTPS_PROXY" nil)
+      (claude-code)
+      )
+    (message "should set api-key")))
+
+
 ;; (use-package claudemacs
 ;;   :vc (:fetcher github :repo "cpoile/claudemacs"))
 
